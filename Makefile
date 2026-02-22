@@ -10,7 +10,10 @@ LDFLAGS :=
 
 SCHEDQOS := schedqos
 
-SRC := schedqos.c parse_argp.c
+CJSON_SRC := cJSON.c
+CJSON_HDR := cJSON.h
+
+SRC := schedqos.c parse_argp.c config_parser.c $(CJSON_SRC)
 OBJS :=$(subst .c,.o,$(SRC))
 
 ifneq ($(STATIC),)
@@ -22,10 +25,16 @@ ifneq ($(DEBUG),)
 	CFLAGS := $(CFLAGS) -DDEBUG
 endif
 
-all: $(SCHEDQOS)
+all: $(CJSON_SRC) $(SCHEDQOS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(CJSON_SRC):
+	git submodule init
+	git submodule update
+	cp cJSON/cJSON.c .
+	cp cJSON/cJSON.h .
 
 $(SCHEDQOS): $(OBJS)
 	$(CC) $(CFLAGS) $(INCLUDES) $(filter %.o,$^) $(LDFLAGS) -o $@
@@ -52,7 +61,7 @@ debug:
 	$(MAKE) DEBUG=1
 
 clean:
-	rm -rf $(SCHEDQOS) *.o
+	rm -rf $(SCHEDQOS) *.o $(CJSON_SRC) $(CJSON_HDR)
 
 clobber: clean
 	$(MAKE) -C clean

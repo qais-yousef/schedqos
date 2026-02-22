@@ -1,0 +1,25 @@
+{
+	"QOS_USER_INTERACTIVE": {
+		"runtime": 8,
+		"policy": "SCHED_NORMAL"
+	},
+	"QOS_USER_INITIATED": {
+		"runtime": 10,
+		"policy": "SCHED_NORMAL"
+	},
+	"QOS_UTILITY": {
+		"runtime": 16,
+		"policy": "SCHED_BATCH",
+		"uclamp_max": 512
+	},
+	"QOS_BACKGROUND": {
+		"runtime": 20,
+		"policy": "SCHED_BATCH",
+		"uclamp_max": 256
+	},
+	"DEFAULT": {
+		"runtime": 16,
+		"policy": "SCHED_BATCH",
+		"uclamp_max": 512
+	}
+}
