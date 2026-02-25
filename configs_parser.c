@@ -10,6 +10,7 @@
 
 #define APP_CONFIGS_PATH	"/var/run/schedqos/app_configs/"
 #define QOS_MAPPINGS_FILE	"/var/run/schedqos/qos_mappings.json"
+#define SCHED_PROFILES_FILE	"/var/run/schedqos/sched_profiles.json"
 
 /*
  * App config parsing function.
@@ -87,6 +88,43 @@ static void __parse_qos_mappings(const char *json_string)
 	cJSON_Delete(root);
 }
 
+/*
+ * Sched Profiles parsing function.
+ */
+static void __parse_sched_profiles(const char *json_string)
+{
+	cJSON *root = cJSON_Parse(json_string);
+	if (!root) {
+		fprintf(stderr, "Error: Invalid JSON format\n");
+		return;
+	}
+
+	cJSON *profile = NULL;
+	cJSON *node = NULL;
+	cJSON_ArrayForEach(profile, root) {
+		fprintf(stdout, "Sched Profile: %s\n", profile->string);
+
+		cJSON_ArrayForEach(node, profile) {
+			if (cJSON_IsArray(node)) {
+				cJSON *val = NULL;
+				cJSON_ArrayForEach(val, node) {
+					if (cJSON_IsString(val)) {
+						fprintf(stdout, "	- %s: %s\n", node->string, val->valuestring);
+					} else if (cJSON_IsNumber(val)) {
+						fprintf(stdout, "	- %s: %d\n", node->string, val->valueint);
+					}
+				}
+			} else if (cJSON_IsString(node)) {
+				fprintf(stdout, "	- %s: %s\n", node->string, node->valuestring);
+			} else if (cJSON_IsNumber(node)) {
+				fprintf(stdout, "	- %s: %d\n", node->string, node->valueint);
+			}
+		}
+	}
+
+	cJSON_Delete(root);
+}
+
 /* TODO can we do better file type checking? */
 static bool is_json_file(const char *filename) {
 	const char *ext = strrchr(filename, '.');
@@ -159,4 +197,24 @@ void parse_qos_mappings(void)
 		__parse_qos_mappings(qos_mapping);
 		free(qos_mapping);
 	}
+}
+
+
+/*
+ * Read sched profiles file.
+ */
+void parse_sched_profiles(void)
+{
+	char *profiles = read_config_file(SCHED_PROFILES_FILE);
+	if (profiles) {
+		__parse_sched_profiles(profiles);
+		free(profiles);
+	}
+}
+
+void parse_all_configs(void)
+{
+	parse_app_configs();
+	parse_qos_mappings();
+	parse_sched_profiles();
 }

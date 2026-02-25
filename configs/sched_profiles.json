@@ -1,0 +1,14 @@
+{
+	"throughput": {
+		"features": ["NO_HRTICK"],
+		"base_slice_ns": 8000000
+	},
+	"interactive": {
+		"features": ["HRTICK"],
+		"base_slice_ns": 4000000
+	},
+	"qos": {
+		"features": "HRTICK",
+		"base_slice_ns": 16000000
+	}
+}

@@ -13,7 +13,7 @@ SCHEDQOS := schedqos
 CJSON_SRC := cJSON.c
 CJSON_HDR := cJSON.h
 
-SRC := schedqos.c parse_argp.c config_parser.c $(CJSON_SRC) netlink_monitor.c
+SRC := schedqos.c parse_argp.c configs_parser.c $(CJSON_SRC) netlink_monitor.c
 OBJS :=$(subst .c,.o,$(SRC))
 
 ifneq ($(STATIC),)

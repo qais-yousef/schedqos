@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /* Copyright (C) 2026 Qais Yousef */
-#include "config_parser.h"
+#include "configs_parser.h"
 #include "netlink_monitor.h"
 #include "parse_argp.h"
 
@@ -12,7 +12,6 @@ int main(int argc, char **argv)
 	if (err)
 		return err;
 
-	parse_app_configs();
-	parse_qos_mappings();
+	parse_all_configs();
 	start_netlink_monitor();
 }
