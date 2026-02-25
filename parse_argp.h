@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 struct sqos_opts {
+	const char *configs_path;
 };
 
 extern struct sqos_opts sqos_opts;

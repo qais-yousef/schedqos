@@ -6,11 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "parse_argp.h"
 #include "cJSON.h"
 
-#define APP_CONFIGS_PATH	"/var/run/schedqos/app_configs/"
-#define QOS_MAPPINGS_FILE	"/var/run/schedqos/qos_mappings.json"
-#define SCHED_PROFILES_FILE	"/var/run/schedqos/sched_profiles.json"
+#define APP_CONFIGS_PATH	"app_configs/"
+#define QOS_MAPPINGS_FILE	"qos_mappings.json"
+#define SCHED_PROFILES_FILE	"sched_profiles.json"
 
 /*
  * App config parsing function.
@@ -134,7 +135,13 @@ static bool is_json_file(const char *filename) {
 
 /* Convert json to a string to be consumed by cJSON */
 static char *read_config_file(const char *config) {
-	FILE *fp = fopen(config, "rb");
+	char full_path[1024];
+	FILE *fp;
+
+	snprintf(full_path, sizeof(full_path), "%s/%s", sqos_opts.configs_path, config);
+	fprintf(stdout, "Reading %s\n", full_path);
+
+	fp = fopen(full_path, "rb");
 	if (!fp)
 		return NULL;
 
@@ -161,9 +168,13 @@ error:
  */
 void parse_app_configs(void)
 {
+	char full_path[1024];
 	struct dirent *entry;
-	DIR *dp = opendir(APP_CONFIGS_PATH);
+	DIR *dp;
 
+	snprintf(full_path, sizeof(full_path), "%s/%s", sqos_opts.configs_path, APP_CONFIGS_PATH);
+
+	dp = opendir(full_path);
 	if (dp == NULL) {
 		perror("opendir");
 		return;
@@ -171,7 +182,6 @@ void parse_app_configs(void)
 
 	while ((entry = readdir(dp))) {
 		if (is_json_file(entry->d_name)) {
-			char full_path[1024];
 
 			snprintf(full_path, sizeof(full_path), "%s/%s", APP_CONFIGS_PATH, entry->d_name);
 

@@ -15,19 +15,26 @@ static char doc[] =
 "Sched QoS Daemon";
 
 struct sqos_opts sqos_opts = {
+	.configs_path = "/var/run/sched_qos",
 };
 
 enum sqos_opts_flags {
 	OPT_DUMMY_START = 0x80,
+
+	OPT_CONFIGS_PATH,
 };
 
 static const struct argp_option options[] = {
+	{ "configs-path", OPT_CONFIGS_PATH, "PATH", 0, "Path to configs file, /var/run/sched_qos/ by default." },
 	{ 0 },
 };
 
 static error_t parse_arg(int key, char *arg, struct argp_state *state)
 {
 	switch (key) {
+	case OPT_CONFIGS_PATH:
+		sqos_opts.configs_path = arg;
+		break;
 	case ARGP_KEY_ARG:
 		argp_usage(state);
 		break;
