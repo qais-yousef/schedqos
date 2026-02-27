@@ -181,7 +181,7 @@ bool add_thread_qos_tag(const void *app, const char *comm, char *qos_tag)
 	thread->comm = g_strdup(comm);
 	thread->qos_tag = char_to_qos_tag(qos_tag);
 
-	fprintf(stdout, "Add QoS Tag for %s: %s\n", comm, qos_tag);
+	LOG_INFO("Add QoS Tag for %s: %s", comm, qos_tag);
 
 	g_hash_table_insert(_app->threads_registry, g_strdup(comm), thread);
 
@@ -201,7 +201,7 @@ void *create_app_config(const char *cmdline)
 	if (!app)
 		return NULL;
 
-	fprintf(stdout, "Creating new app config for %s\n", cmdline);
+	LOG_INFO("Creating new app config for %s", cmdline);
 
 	app->cmdline = g_strdup(cmdline);
 
@@ -235,7 +235,7 @@ void create_app_instance(const pid_t tgid)
 
 	g_hash_table_insert(app_instance_registry, GINT_TO_POINTER(tgid), app);
 
-	fprintf(stdout, "New app instance of %s\n", app->cmdline);
+	LOG_INFO("New app instance of %s", app->cmdline);
 }
 
 void destroy_app_instance(const pid_t tgid)
@@ -245,7 +245,7 @@ void destroy_app_instance(const pid_t tgid)
 	if (!app)
 		return;
 
-	fprintf(stdout, "Exit app instance of %s\n", app->cmdline);
+	LOG_INFO("Exit app instance of %s", app->cmdline);
 
 	free_app_instance(app);
 }
@@ -268,7 +268,7 @@ bool apply_thread_qos(pid_t tgid, const char *comm)
 	if (!thread)
 		return false;
 
-	fprintf(stdout, "Applying QoS Tag for %s\n", comm);
+	LOG_INFO("Applying QoS Tag for %s", comm);
 
 	/* do sched_setattr based on the qos tag */
 

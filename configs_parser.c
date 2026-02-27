@@ -21,7 +21,7 @@ static void __parse_app_config(const char *json_string)
 {
 	cJSON *root = cJSON_Parse(json_string);
 	if (!root) {
-		fprintf(stderr, "Error: Invalid JSON format\n");
+		LOG_ERROR("Invalid JSON format");
 		return;
 	}
 
@@ -30,7 +30,7 @@ static void __parse_app_config(const char *json_string)
 	cJSON_ArrayForEach(app_node, root) {
 		void *app;
 
-		fprintf(stdout, "app cmdline: %s\n", app_node->string);
+		LOG_INFO("app cmdline: %s", app_node->string);
 
 		app = create_app_config(app_node->string);
 		if (!app)
@@ -40,25 +40,25 @@ static void __parse_app_config(const char *json_string)
 		cJSON *period = cJSON_GetObjectItemCaseSensitive(app_node, "period");
 
 		if (cJSON_IsString(version))
-			fprintf(stdout, "  Version: %s\n", version->valuestring);
+			LOG_INFO("  Version: %s", version->valuestring);
 		if (cJSON_IsNumber(period))
-			fprintf(stdout, "  Period: %d\n", period->valueint);
+			LOG_INFO("  Period: %d", period->valueint);
 
 		cJSON *thread_qos = cJSON_GetObjectItemCaseSensitive(app_node, "thread_qos");
 		if (cJSON_IsObject(thread_qos)) {
-			fprintf(stdout, "  Thread QoS Settings:\n");
+			LOG_INFO("  Thread QoS Settings:");
 			cJSON *thread = NULL;
 			cJSON_ArrayForEach(thread, thread_qos) {
 				if (cJSON_IsArray(thread)) {
 					cJSON *qos = NULL;
 					cJSON_ArrayForEach(qos, thread) {
 						if (cJSON_IsString(qos)) {
-							fprintf(stdout, "	- %s: %s\n", thread->string, qos->valuestring);
+							LOG_INFO("	- %s: %s", thread->string, qos->valuestring);
 							add_thread_qos_tag(app, thread->string, qos->valuestring);
 						}
 					}
 				} else if (cJSON_IsString(thread)) {
-					fprintf(stdout, "	- %s: %s\n", thread->string, thread->valuestring);
+					LOG_INFO("	- %s: %s", thread->string, thread->valuestring);
 					add_thread_qos_tag(app, thread->string, thread->valuestring);
 				}
 			}
@@ -75,24 +75,24 @@ static void __parse_qos_mappings(const char *json_string)
 {
 	cJSON *root = cJSON_Parse(json_string);
 	if (!root) {
-		fprintf(stderr, "Error: Invalid JSON format\n");
+		LOG_ERROR("Invalid JSON format");
 		return;
 	}
 
 	cJSON *qos_node = NULL;
 	cJSON_ArrayForEach(qos_node, root) {
-		fprintf(stdout, "QoS Tag: %s\n", qos_node->string);
+		LOG_INFO("QoS Tag: %s", qos_node->string);
 
 		cJSON *runtime = cJSON_GetObjectItemCaseSensitive(qos_node, "runtime");
 		cJSON *policy = cJSON_GetObjectItemCaseSensitive(qos_node, "policy");
 		cJSON *uclamp_max = cJSON_GetObjectItemCaseSensitive(qos_node, "uclamp_max");
 
 		if (cJSON_IsNumber(runtime))
-			fprintf(stdout, "  runtime: %d\n", runtime->valueint);
+			LOG_INFO("  runtime: %d", runtime->valueint);
 		if (cJSON_IsString(policy))
-			fprintf(stdout, "  policy: %s\n", policy->valuestring);
+			LOG_INFO("  policy: %s", policy->valuestring);
 		if (cJSON_IsNumber(uclamp_max))
-			fprintf(stdout, "  uclamp_max: %d\n", uclamp_max->valueint);
+			LOG_INFO("  uclamp_max: %d", uclamp_max->valueint);
 	}
 
 	cJSON_Delete(root);
@@ -105,29 +105,29 @@ static void __parse_sched_profiles(const char *json_string)
 {
 	cJSON *root = cJSON_Parse(json_string);
 	if (!root) {
-		fprintf(stderr, "Error: Invalid JSON format\n");
+		LOG_ERROR("Invalid JSON format");
 		return;
 	}
 
 	cJSON *profile = NULL;
 	cJSON *node = NULL;
 	cJSON_ArrayForEach(profile, root) {
-		fprintf(stdout, "Sched Profile: %s\n", profile->string);
+		LOG_INFO("Sched Profile: %s", profile->string);
 
 		cJSON_ArrayForEach(node, profile) {
 			if (cJSON_IsArray(node)) {
 				cJSON *val = NULL;
 				cJSON_ArrayForEach(val, node) {
 					if (cJSON_IsString(val)) {
-						fprintf(stdout, "	- %s: %s\n", node->string, val->valuestring);
+						LOG_INFO("	- %s: %s", node->string, val->valuestring);
 					} else if (cJSON_IsNumber(val)) {
-						fprintf(stdout, "	- %s: %d\n", node->string, val->valueint);
+						LOG_INFO("	- %s: %d", node->string, val->valueint);
 					}
 				}
 			} else if (cJSON_IsString(node)) {
-				fprintf(stdout, "	- %s: %s\n", node->string, node->valuestring);
+				LOG_INFO("	- %s: %s", node->string, node->valuestring);
 			} else if (cJSON_IsNumber(node)) {
-				fprintf(stdout, "	- %s: %d\n", node->string, node->valueint);
+				LOG_INFO("	- %s: %d", node->string, node->valueint);
 			}
 		}
 	}
@@ -148,7 +148,7 @@ static char *read_config_file(const char *config) {
 	FILE *fp;
 
 	snprintf(full_path, sizeof(full_path), "%s/%s", sqos_opts.configs_path, config);
-	fprintf(stdout, "Reading %s\n", full_path);
+	LOG_INFO("Reading %s", full_path);
 
 	fp = fopen(full_path, "rb");
 	if (!fp)
@@ -194,7 +194,7 @@ void parse_app_configs(void)
 
 			snprintf(full_path, sizeof(full_path), "%s/%s", APP_CONFIGS_PATH, entry->d_name);
 
-			fprintf(stdout, "processing: %s\n", full_path);
+			LOG_INFO("processing: %s", full_path);
 
 			char *app_config = read_config_file(full_path);
 			if (app_config) {

@@ -16,6 +16,7 @@ static char doc[] =
 
 struct sqos_opts sqos_opts = {
 	.configs_path = "/var/run/sched_qos",
+	.verbose = false,
 };
 
 enum sqos_opts_flags {
@@ -26,6 +27,7 @@ enum sqos_opts_flags {
 
 static const struct argp_option options[] = {
 	{ "configs-path", OPT_CONFIGS_PATH, "PATH", 0, "Path to configs file, /var/run/sched_qos/ by default." },
+	{ "verbose", 'v', 0, 0, "Enable verbose logging." },
 	{ 0 },
 };
 
@@ -34,6 +36,9 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 	switch (key) {
 	case OPT_CONFIGS_PATH:
 		sqos_opts.configs_path = arg;
+		break;
+	case 'v':
+		sqos_opts.verbose = true;
 		break;
 	case ARGP_KEY_ARG:
 		argp_usage(state);

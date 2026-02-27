@@ -7,7 +7,7 @@ include cross_compile.mk
 
 CFLAGS := -g -O2 -Wall -DSA_VERSION=$(VERSION)
 LDFLAGS := -lglib-2.0
-INCLUDES := $(shell pkg-config --cflags --libs glib-2.0)
+INCLUDES := -include logging.h $(shell pkg-config --cflags --libs glib-2.0)
 
 SCHEDQOS := schedqos
 

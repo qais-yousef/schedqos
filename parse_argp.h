@@ -7,6 +7,7 @@
 
 struct sqos_opts {
 	const char *configs_path;
+	bool verbose;
 };
 
 extern struct sqos_opts sqos_opts;

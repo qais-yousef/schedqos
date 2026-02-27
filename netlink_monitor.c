@@ -75,7 +75,7 @@ void netlink_monitor(int nl_sock)
 
 		status = recv(nl_sock, &msg, sizeof(msg), 0);
 		if (status < 0) {
-			fprintf(stderr, "netlink got status: %d\n", status);
+			LOG_ERROR("netlink got status: %d", status);
 			continue;
 		}
 
@@ -87,7 +87,7 @@ void netlink_monitor(int nl_sock)
 
 			get_comm_by_pid(pid, comm);
 
-			fprintf(stdout, "[EXEC] %s PID: %d, TGID: %d\n", comm, pid, tgid);
+			LOG_VERBOSE("[EXEC] %s PID: %d, TGID: %d", comm, pid, tgid);
 
 			create_app_instance(tgid);
 			apply_thread_qos(pid, comm);
@@ -101,8 +101,8 @@ void netlink_monitor(int nl_sock)
 
 			get_comm_by_pid(pid, comm);
 
-			fprintf(stdout, "[FORK] %s Parent: %d:%d, Child: %d:%d\n",
-			        comm, ppid, ptgid, pid, tgid);
+			LOG_VERBOSE("[FORK] %s Parent: %d:%d, Child: %d:%d",
+				    comm, ppid, ptgid, pid, tgid);
 
 			apply_thread_qos(pid, comm);
 			break;
@@ -110,7 +110,7 @@ void netlink_monitor(int nl_sock)
 			pid_t pid = msg.proc_ev.event_data.comm.process_pid;
 			char *comm = msg.proc_ev.event_data.comm.comm;
 
-			fprintf(stdout, "[COMM] PID: %d, Name: %s\n", pid, comm);
+			LOG_VERBOSE("[COMM] PID: %d, Name: %s", pid, comm);
 
 			apply_thread_qos(pid, comm);
 			break;
@@ -121,16 +121,16 @@ void netlink_monitor(int nl_sock)
 
 			get_comm_by_pid(pid, comm);
 
-			fprintf(stdout, "[EXIT] %s PID: %d, TGID: %d, Code: %d\n",
-			       comm, pid, tgid,
-			       msg.proc_ev.event_data.exit.exit_code);
+			LOG_VERBOSE("[EXIT] %s PID: %d, TGID: %d, Code: %d",
+				    comm, pid, tgid,
+				    msg.proc_ev.event_data.exit.exit_code);
 
 			if (pid == tgid)
 				destroy_app_instance(tgid);
 			break;
 		}
 		default:
-			fprintf(stdout, "[PROC_EVT] Received event: %d\n", msg.proc_ev.what);
+			LOG_VERBOSE("[PROC_EVT] Received event: %d", msg.proc_ev.what);
 		}
 	}
 }
@@ -142,7 +142,7 @@ void start_netlink_monitor(void)
 	if (nl_sock == -1 || set_proc_ev_listen(nl_sock, 1) == -1)
 		exit(1);
 
-	fprintf(stdout, "Listening for events...\n");
+	LOG_VERBOSE("Listening for events...");
 	netlink_monitor(nl_sock);
 	close(nl_sock);
 }
