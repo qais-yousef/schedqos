@@ -1,0 +1,46 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/* Copyright (C) 2026 Qais Yousef */
+#include <fcntl.h>
+#include <glib.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+/*
+ * Reads cmdline for a pid and returns a copy. Callers must ensure to g_free()
+ * the copy.
+ */
+char *get_cmdline_by_pid(pid_t pid)
+{
+	ssize_t bytes_read;
+	char buffer[4096];
+	char path[64];
+	int fd, i;
+
+	snprintf(path, sizeof(path), "/proc/%d/cmdline", pid);
+
+	fd = open(path, O_RDONLY);
+	if (fd < 0)
+		return NULL;
+
+	bytes_read = read(fd, buffer, sizeof(buffer) - 1);
+	close(fd);
+
+	if (bytes_read <= 0)
+		return NULL;
+
+	buffer[bytes_read] = '\0';
+
+	/*
+	 * Replace internal NULLs with spaces to create a single string
+	 * The kernel puts a NULL after the last argument
+	 */
+	for (i = 0; i < bytes_read - 1; i++) {
+		if (buffer[i] == '\0') {
+			buffer[i] = ' ';
+		}
+	}
+
+	return g_strdup(buffer);
+}

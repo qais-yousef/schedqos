@@ -3,6 +3,7 @@
 #include "configs_parser.h"
 #include "netlink_monitor.h"
 #include "parse_argp.h"
+#include "qos_manager.h"
 
 int main(int argc, char **argv)
 {
@@ -12,6 +13,7 @@ int main(int argc, char **argv)
 	if (err)
 		return err;
 
+	init_qos_manager();
 	parse_all_configs();
 	start_netlink_monitor();
 }
