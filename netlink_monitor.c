@@ -10,6 +10,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "qos_manager.h"
+#include "utils.h"
+
 /* Structure to wrap netlink message headers and connector payload */
 struct __attribute__ ((aligned(NLMSG_ALIGNTO))) nlcn_msg
 {
@@ -77,26 +80,55 @@ void netlink_monitor(int nl_sock)
 		}
 
 		switch (msg.proc_ev.what) {
-		case PROC_EVENT_EXEC:
-			fprintf(stdout, "[EXEC] PID: %d, TGID: %d\n",
-			       msg.proc_ev.event_data.exec.process_pid,
-			       msg.proc_ev.event_data.exec.process_tgid);
+		case PROC_EVENT_EXEC: {
+			pid_t pid = msg.proc_ev.event_data.exec.process_pid;
+			pid_t tgid = msg.proc_ev.event_data.exec.process_tgid;
+			char comm[TASK_COMM_LEN] = {};
+
+			get_comm_by_pid(pid, comm);
+
+			fprintf(stdout, "[EXEC] %s PID: %d, TGID: %d\n", comm, pid, tgid);
+
+			create_app_instance(tgid);
+			apply_thread_qos(pid, comm);
 			break;
-		case PROC_EVENT_FORK:
-			fprintf(stdout, "[FORK] Parent: %d, Child: %d\n",
-			       msg.proc_ev.event_data.fork.parent_pid,
-			       msg.proc_ev.event_data.fork.child_pid);
+		} case PROC_EVENT_FORK: {
+			pid_t ppid = msg.proc_ev.event_data.fork.parent_pid;
+			pid_t ptgid = msg.proc_ev.event_data.fork.parent_tgid;
+			pid_t pid = msg.proc_ev.event_data.fork.parent_pid;
+			pid_t tgid = msg.proc_ev.event_data.fork.parent_tgid;
+			char comm[TASK_COMM_LEN] = {};
+
+			get_comm_by_pid(pid, comm);
+
+			fprintf(stdout, "[FORK] %s Parent: %d:%d, Child: %d:%d\n",
+			        comm, ppid, ptgid, pid, tgid);
+
+			apply_thread_qos(pid, comm);
 			break;
-		case PROC_EVENT_COMM:
-			fprintf(stdout, "[COMM] PID: %d, Name: %s\n",
-			       msg.proc_ev.event_data.comm.process_pid,
-			       msg.proc_ev.event_data.comm.comm);
+		} case PROC_EVENT_COMM: {
+			pid_t pid = msg.proc_ev.event_data.comm.process_pid;
+			char *comm = msg.proc_ev.event_data.comm.comm;
+
+			fprintf(stdout, "[COMM] PID: %d, Name: %s\n", pid, comm);
+
+			apply_thread_qos(pid, comm);
 			break;
-		case PROC_EVENT_EXIT:
-			fprintf(stdout, "[EXIT] PID: %d, Code: %d\n",
-			       msg.proc_ev.event_data.exit.process_pid,
+		} case PROC_EVENT_EXIT: {
+			pid_t pid = msg.proc_ev.event_data.exit.process_pid;
+			pid_t tgid = msg.proc_ev.event_data.exit.process_tgid;
+			char comm[TASK_COMM_LEN] = {};
+
+			get_comm_by_pid(pid, comm);
+
+			fprintf(stdout, "[EXIT] %s PID: %d, TGID: %d, Code: %d\n",
+			       comm, pid, tgid,
 			       msg.proc_ev.event_data.exit.exit_code);
+
+			if (pid == tgid)
+				destroy_app_instance(tgid);
 			break;
+		}
 		default:
 			fprintf(stdout, "[PROC_EVT] Received event: %d\n", msg.proc_ev.what);
 		}

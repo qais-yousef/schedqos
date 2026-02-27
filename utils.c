@@ -7,6 +7,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "utils.h"
+
 /*
  * Reads cmdline for a pid and returns a copy. Callers must ensure to g_free()
  * the copy.
@@ -44,3 +46,26 @@ char *get_cmdline_by_pid(pid_t pid)
 
 	return g_strdup(buffer);
 }
+
+bool get_comm_by_pid(pid_t pid, char *comm)
+{
+	char path[64];
+	FILE *fp;
+
+	snprintf(path, sizeof(path), "/proc/%d/comm", pid);
+
+	fp = fopen(path, "r");
+	if (!fp)
+		return false;
+
+	if (fgets(comm, TASK_COMM_LEN, fp) != NULL) {
+		fclose(fp);
+		/* Remove the trailing newline added by the kernel */
+		comm[strcspn(comm, "\n")] = '\0';
+		return true;
+	}
+
+	fclose(fp);
+	return false;
+}
+

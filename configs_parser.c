@@ -6,8 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "parse_argp.h"
 #include "cJSON.h"
+#include "parse_argp.h"
+#include "qos_manager.h"
 
 #define APP_CONFIGS_PATH	"app_configs/"
 #define QOS_MAPPINGS_FILE	"qos_mappings.json"
@@ -27,7 +28,13 @@ static void __parse_app_config(const char *json_string)
 	/* We identify apps by their cmdline */
 	cJSON *app_node = NULL;
 	cJSON_ArrayForEach(app_node, root) {
+		void *app;
+
 		fprintf(stdout, "app cmdline: %s\n", app_node->string);
+
+		app = create_app_config(app_node->string);
+		if (!app)
+			continue;
 
 		cJSON *version = cJSON_GetObjectItemCaseSensitive(app_node, "version");
 		cJSON *period = cJSON_GetObjectItemCaseSensitive(app_node, "period");
@@ -47,10 +54,12 @@ static void __parse_app_config(const char *json_string)
 					cJSON_ArrayForEach(qos, thread) {
 						if (cJSON_IsString(qos)) {
 							fprintf(stdout, "	- %s: %s\n", thread->string, qos->valuestring);
+							add_thread_qos_tag(app, thread->string, qos->valuestring);
 						}
 					}
 				} else if (cJSON_IsString(thread)) {
 					fprintf(stdout, "	- %s: %s\n", thread->string, thread->valuestring);
+					add_thread_qos_tag(app, thread->string, thread->valuestring);
 				}
 			}
 		}
