@@ -5,7 +5,7 @@ VERSION=$(shell git describe --tags)
 
 include cross_compile.mk
 
-CFLAGS := -g -O2 -Wall -DSA_VERSION=$(VERSION)
+CFLAGS := -g -O2 -Wall -DSA_VERSION=$(VERSION) -D_GNU_SOURCE
 LDFLAGS := -lglib-2.0
 INCLUDES := -include logging.h $(shell pkg-config --cflags --libs glib-2.0)
 
@@ -14,7 +14,7 @@ SCHEDQOS := schedqos
 CJSON_SRC := cJSON.c
 CJSON_HDR := cJSON.h
 
-SRC := schedqos.c parse_argp.c configs_parser.c $(CJSON_SRC) netlink_monitor.c qos_manager.c utils.c
+SRC := schedqos.c parse_argp.c configs_parser.c $(CJSON_SRC) netlink_monitor.c qos_manager.c utils.c qos_tagging.c
 OBJS :=$(subst .c,.o,$(SRC))
 
 ifneq ($(STATIC),)

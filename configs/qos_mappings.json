@@ -1,11 +1,13 @@
 {
 	"QOS_USER_INTERACTIVE": {
 		"runtime": 8,
-		"policy": "SCHED_NORMAL"
+		"policy": "SCHED_NORMAL",
+		"uclamp_max": 1024
 	},
 	"QOS_USER_INITIATED": {
 		"runtime": 10,
-		"policy": "SCHED_NORMAL"
+		"policy": "SCHED_NORMAL",
+		"uclamp_max": 1024
 	},
 	"QOS_UTILITY": {
 		"runtime": 16,

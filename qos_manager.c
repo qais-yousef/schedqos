@@ -5,44 +5,9 @@
 #include <stdio.h>
 
 #include "qos_manager.h"
+#include "qos_tagging.h"
 #include "utils.h"
 
-/*
- * Per Task Thread QoS Tag
- *
- * QOS_DEFAULT:
- *
- *	System default behavior, likely mapped to QOS_UTILITY
- *
- * QOS_USER_INTERACTIVE:
- *
- *	Tasks that require immediate response
- *
- * QOS_USER_INITIATED:
- *
- *	Tasks that can tolerate short delays, but require fast response
- *	otherwise
- *
- * QOS_UTILITY:
- *
- *	Tasks that can tolerate long delays, but not prolonged ones
- *
- * QOS_BACKGROUND:
- *
- *	Tasks that don't mind prolonged delays
- */
-enum qos_tag {
-	QOS_DEFAULT,
-	QOS_USER_INTERACTIVE,
-	QOS_USER_INITIATED,
-	QOS_UTILITY,
-	QOS_BACKGROUND,
-};
-
-struct thread_info {
-	pid_t pid;
-	char comm[16];
-};
 
 /*
  * An instance of an app that has been exec'ed.
@@ -72,23 +37,6 @@ struct app_config {
 static GHashTable *app_config_registry;
 static GHashTable *app_instance_registry;
 
-
-static enum qos_tag char_to_qos_tag(char *qos_tag)
-{
-	if (!qos_tag)
-		return QOS_DEFAULT;
-
-	if (strcmp(qos_tag, "QOS_USER_INTERACTIVE") == 0)
-		return QOS_USER_INTERACTIVE;
-	else if (strcmp(qos_tag, "QOS_USER_INITIATED") == 0)
-		return QOS_USER_INITIATED;
-	else if (strcmp(qos_tag, "QOS_UTILITY") == 0)
-		return QOS_UTILITY;
-	else if (strcmp(qos_tag, "QOS_BACKGROUND") == 0)
-		return QOS_BACKGROUND;
-	else
-		return QOS_DEFAULT;
-}
 
 static void free_thread_qos(gpointer data)
 {
@@ -250,27 +198,33 @@ void destroy_app_instance(const pid_t tgid)
 	free_app_instance(app);
 }
 
-bool apply_thread_qos(pid_t tgid, const char *comm)
+bool apply_thread_qos(pid_t pid, pid_t tgid, const char *comm)
 {
+	enum qos_tag qos_tag = QOS_DEFAULT;
 	struct app_instance *appi;
 	struct thread_qos *thread;
 	struct app_config *app;
+	int ret = false;
 
 	appi = lookup_app_instance(tgid);
 	if (!appi)
-		return false;
+		goto out;
 
 	app = lookup_app_config(appi->cmdline);
 	if (!app)
-		return false;
+		goto out;
 
 	thread = lookup_thread(app, comm);
 	if (!thread)
-		return false;
+		goto out;
 
-	LOG_INFO("Applying QoS Tag for %s", comm);
+	qos_tag = thread->qos_tag;
+	ret = true;
 
-	/* do sched_setattr based on the qos tag */
+out:
+	LOG_INFO("Applying QoS Tag %d for %s", qos_tag, comm);
 
-	return true;
+	apply_thread_qos_tag(pid, qos_tag);
+
+	return ret;
 }

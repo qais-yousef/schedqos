@@ -11,4 +11,4 @@ bool add_thread_qos_tag(const void *app, const char *comm, char *qos_tag);
 void *create_app_config(const char *cmdline);
 void create_app_instance(const pid_t tgid);
 void destroy_app_instance(const pid_t tgid);
-bool apply_thread_qos(pid_t tgid, const char *comm);
+bool apply_thread_qos(pid_t pid, pid_t tgid, const char *comm);

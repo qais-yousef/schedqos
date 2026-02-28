@@ -90,7 +90,7 @@ void netlink_monitor(int nl_sock)
 			LOG_VERBOSE("[EXEC] %s PID: %d, TGID: %d", comm, pid, tgid);
 
 			create_app_instance(tgid);
-			apply_thread_qos(pid, comm);
+			apply_thread_qos(pid, tgid, comm);
 			break;
 		} case PROC_EVENT_FORK: {
 			pid_t ppid = msg.proc_ev.event_data.fork.parent_pid;
@@ -104,15 +104,16 @@ void netlink_monitor(int nl_sock)
 			LOG_VERBOSE("[FORK] %s Parent: %d:%d, Child: %d:%d",
 				    comm, ppid, ptgid, pid, tgid);
 
-			apply_thread_qos(pid, comm);
+			apply_thread_qos(pid, tgid, comm);
 			break;
 		} case PROC_EVENT_COMM: {
 			pid_t pid = msg.proc_ev.event_data.comm.process_pid;
+			pid_t tgid = msg.proc_ev.event_data.comm.process_tgid;
 			char *comm = msg.proc_ev.event_data.comm.comm;
 
-			LOG_VERBOSE("[COMM] PID: %d, Name: %s", pid, comm);
+			LOG_VERBOSE("[COMM] PID: %d, TGID: %d, Name: %s", pid, tgid, comm);
 
-			apply_thread_qos(pid, comm);
+			apply_thread_qos(pid, tgid, comm);
 			break;
 		} case PROC_EVENT_EXIT: {
 			pid_t pid = msg.proc_ev.event_data.exit.process_pid;

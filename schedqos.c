@@ -2,7 +2,6 @@
 /* Copyright (C) 2026 Qais Yousef */
 #include "configs_parser.h"
 #include "netlink_monitor.h"
-#include "parse_argp.h"
 #include "qos_manager.h"
 
 int main(int argc, char **argv)

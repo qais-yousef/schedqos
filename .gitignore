@@ -1,5 +1,7 @@
 *.o
-schedqos
 cJSON.c
 cJSON.h
 configs/*/test.json
+cscope.*
+schedqos
+tags
