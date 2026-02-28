@@ -14,6 +14,27 @@
 #define QOS_MAPPINGS_FILE	"qos_mappings.json"
 #define SCHED_PROFILES_FILE	"sched_profiles.json"
 
+
+static void __parse_thread_qos(const void *app, const cJSON *thread_qos)
+{
+	LOG_INFO("  Thread QoS Settings:");
+	cJSON *thread = NULL;
+	cJSON_ArrayForEach(thread, thread_qos) {
+		if (cJSON_IsArray(thread)) {
+			cJSON *qos = NULL;
+			cJSON_ArrayForEach(qos, thread) {
+				if (cJSON_IsString(qos)) {
+					LOG_INFO("	- %s: %s", thread->string, qos->valuestring);
+					add_thread_qos_tag(app, thread->string, qos->valuestring);
+				}
+			}
+		} else if (cJSON_IsString(thread)) {
+			LOG_INFO("	- %s: %s", thread->string, thread->valuestring);
+			add_thread_qos_tag(app, thread->string, thread->valuestring);
+		}
+	}
+}
+
 /*
  * App config parsing function.
  */
@@ -45,24 +66,8 @@ static void __parse_app_config(const char *json_string)
 			LOG_INFO("  Period: %d", period->valueint);
 
 		cJSON *thread_qos = cJSON_GetObjectItemCaseSensitive(app_node, "thread_qos");
-		if (cJSON_IsObject(thread_qos)) {
-			LOG_INFO("  Thread QoS Settings:");
-			cJSON *thread = NULL;
-			cJSON_ArrayForEach(thread, thread_qos) {
-				if (cJSON_IsArray(thread)) {
-					cJSON *qos = NULL;
-					cJSON_ArrayForEach(qos, thread) {
-						if (cJSON_IsString(qos)) {
-							LOG_INFO("	- %s: %s", thread->string, qos->valuestring);
-							add_thread_qos_tag(app, thread->string, qos->valuestring);
-						}
-					}
-				} else if (cJSON_IsString(thread)) {
-					LOG_INFO("	- %s: %s", thread->string, thread->valuestring);
-					add_thread_qos_tag(app, thread->string, thread->valuestring);
-				}
-			}
-		}
+		if (cJSON_IsObject(thread_qos))
+			__parse_thread_qos(app, thread_qos);
 	}
 
 	cJSON_Delete(root);
