@@ -103,6 +103,10 @@ void netlink_monitor(int nl_sock)
 			LOG_VERBOSE("[FORK] %s Parent: %d:%d, Child: %d:%d",
 				    comm, ppid, ptgid, pid, tgid);
 
+			/* Fork is another way to spawn new app */
+			if (pid == tgid)
+				create_app_instance(tgid);
+
 			apply_thread_qos(pid, tgid, comm);
 			break;
 		} case PROC_EVENT_COMM: {
