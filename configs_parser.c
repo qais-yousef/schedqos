@@ -88,33 +88,20 @@ static void __parse_qos_mappings(const char *json_string)
 	cJSON_ArrayForEach(qos_node, root) {
 		LOG_INFO("QoS Tag: %s", qos_node->string);
 
-		cJSON *runtime = cJSON_GetObjectItemCaseSensitive(qos_node, "runtime");
-		cJSON *policy = cJSON_GetObjectItemCaseSensitive(qos_node, "policy");
-		cJSON *uclamp_max = cJSON_GetObjectItemCaseSensitive(qos_node, "uclamp_max");
-
-		if (cJSON_IsNumber(runtime)) {
-			LOG_INFO("  runtime: %d", runtime->valueint);
-		} else {
-			LOG_ERROR("runtime must be a number");
-			continue;
+		cJSON *attr = NULL;
+		cJSON_ArrayForEach(attr, qos_node) {
+			if (cJSON_IsNumber(attr)) {
+				LOG_INFO("  %s: %d", attr->string, attr->valueint);
+				parse_thread_qos_mapping_int(char_to_qos_tag(qos_node->string),
+							     attr->string, attr->valueint);
+			} else if (cJSON_IsString(attr)) {
+				LOG_INFO("  %s: %s", attr->string, attr->valuestring);
+				parse_thread_qos_mapping_str(char_to_qos_tag(qos_node->string),
+							     attr->string, attr->valuestring);
+			} else {
+				LOG_ERROR(" Unknown sched_attr type: %s", attr->string);
+			}
 		}
-
-		if (cJSON_IsString(policy)) {
-			LOG_INFO("  policy: %s", policy->valuestring);
-		} else {
-			LOG_ERROR("policy must be a string");
-			continue;
-		}
-
-		if (cJSON_IsNumber(uclamp_max)) {
-			LOG_INFO("  uclamp_max: %d", uclamp_max->valueint);
-		} else {
-			LOG_ERROR("uclamp_max must be a number");
-			continue;
-		}
-
-		parse_thread_qos_mapping(char_to_qos_tag(qos_node->string),
-					 policy->valuestring, runtime->valueint, uclamp_max->valueint);
 	}
 
 	cJSON_Delete(root);

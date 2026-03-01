@@ -69,6 +69,6 @@ static inline char *qos_tag_to_char(enum qos_tag qos_tag)
 	}
 }
 
-void parse_thread_qos_mapping(enum qos_tag qos_tag, char *policy,
-			      uint64_t runtime, uint32_t uclamp_max);
+void parse_thread_qos_mapping_str(enum qos_tag qos_tag, char *attr, char *value);
+void parse_thread_qos_mapping_int(enum qos_tag qos_tag, char *attr, int value);
 void apply_thread_qos_tag(pid_t pid, const char *comm, enum qos_tag qos_tag);
