@@ -10,6 +10,25 @@
 #include "utils.h"
 
 /*
+ * Returns the short name for the cmdline. Callers must call g_free() on the
+ * returned pointer.
+ */
+gchar* get_short_name(const gchar *cmdline) {
+	gchar *basename;
+	gchar **parts;
+
+	if (!cmdline || *cmdline == '\0')
+		return NULL;
+
+	parts = g_strsplit(cmdline, " ", 2);
+	basename = g_path_get_basename(parts[0]);
+
+	g_strfreev(parts);
+
+	return basename;
+}
+
+/*
  * Reads cmdline for a pid and returns a copy. Callers must ensure to g_free()
  * the copy.
  */
@@ -44,7 +63,7 @@ char *get_cmdline_by_pid(pid_t pid)
 		}
 	}
 
-	return g_strdup(buffer);
+	return get_short_name(buffer);
 }
 
 bool get_comm_by_pid(pid_t pid, char *comm)
