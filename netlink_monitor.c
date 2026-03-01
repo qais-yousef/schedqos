@@ -94,8 +94,8 @@ void netlink_monitor(int nl_sock)
 		} case PROC_EVENT_FORK: {
 			pid_t ppid = msg.proc_ev.event_data.fork.parent_pid;
 			pid_t ptgid = msg.proc_ev.event_data.fork.parent_tgid;
-			pid_t pid = msg.proc_ev.event_data.fork.parent_pid;
-			pid_t tgid = msg.proc_ev.event_data.fork.parent_tgid;
+			pid_t pid = msg.proc_ev.event_data.fork.child_pid;
+			pid_t tgid = msg.proc_ev.event_data.fork.child_tgid;
 			char comm[TASK_COMM_LEN] = {};
 
 			get_comm_by_pid(pid, comm);
