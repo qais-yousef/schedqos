@@ -91,7 +91,7 @@ static void free_app_instance(gpointer data)
 
 static void create_app_instance_registry(void)
 {
-	app_instance_registry = g_hash_table_new_full(g_direct_hash, g_direct_equal, g_free, free_app_instance);
+	app_instance_registry = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, free_app_instance);
 }
 
 static void destroy_app_instance_registry(void)
@@ -173,6 +173,11 @@ void create_app_instance(const pid_t tgid)
 	if (!app)
 		return;
 
+	if (lookup_app_instance(tgid)) {
+		LOG_ERROR("App instance for %d was already created", tgid);
+		return;
+	}
+
 	app->cmdline = get_cmdline_by_pid(tgid);
 	if (!app->cmdline) {
 		g_free(app);
@@ -192,9 +197,9 @@ void destroy_app_instance(const pid_t tgid)
 	if (!app)
 		return;
 
-	LOG_INFO("Exit app instance of %s", app->cmdline);
+	LOG_INFO("Exit app instance of %d %s", tgid, app->cmdline);
 
-	free_app_instance(app);
+	g_hash_table_remove(app_instance_registry, GINT_TO_POINTER(tgid));
 }
 
 bool apply_thread_qos(pid_t pid, pid_t tgid, const char *comm)
