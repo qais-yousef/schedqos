@@ -6,7 +6,6 @@
 
 #include "qos_manager.h"
 #include "qos_tagging.h"
-#include "utils.h"
 
 
 /*
@@ -222,9 +221,9 @@ bool apply_thread_qos(pid_t pid, pid_t tgid, const char *comm)
 	ret = true;
 
 out:
-	LOG_INFO("Applying QoS Tag %d for %s", qos_tag, comm);
+	LOG_INFO("Applying QoS Tag %s for %d %s", qos_tag_to_char(qos_tag), pid, comm);
 
-	apply_thread_qos_tag(pid, qos_tag);
+	apply_thread_qos_tag(pid, comm, qos_tag);
 
 	return ret;
 }

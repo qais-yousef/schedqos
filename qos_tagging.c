@@ -188,7 +188,7 @@ void parse_thread_qos_mapping(enum qos_tag qos_tag, char *policy,
 	log_qos_tag_attr(qos_tag);
 }
 
-void apply_thread_qos_tag(pid_t pid, enum qos_tag qos_tag)
+void apply_thread_qos_tag(pid_t pid, const char *comm, enum qos_tag qos_tag)
 {
 	struct sched_attr *sa;
 	int ret;
@@ -217,7 +217,7 @@ void apply_thread_qos_tag(pid_t pid, enum qos_tag qos_tag)
 	log_qos_tag_attr(qos_tag);
 	log_thread_attr(pid);
 
-	LOG_INFO("Applying QoS Tag %d for %d", qos_tag, pid);
+	LOG_INFO("Applying QoS Tag %s for %d %s", qos_tag_to_char(qos_tag), pid, comm);
 	ret = sched_setattr(pid, sa, 0);
 	if (ret)
 		LOG_ERROR("Failed to change sched_attr for %d", pid);

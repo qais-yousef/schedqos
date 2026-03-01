@@ -51,6 +51,24 @@ static inline enum qos_tag char_to_qos_tag(char *qos_tag)
 		return QOS_DEFAULT;
 }
 
+static inline char *qos_tag_to_char(enum qos_tag qos_tag)
+{
+	switch(qos_tag) {
+	case QOS_DEFAULT:
+		return "QOS_DEFAULT";
+	case QOS_USER_INTERACTIVE:
+		return "QOS_USER_INTERACTIVE";
+	case QOS_USER_INITIATED:
+		return "QOS_USER_INITIATED";
+	case QOS_UTILITY:
+		return "QOS_UTILITY";
+	case QOS_BACKGROUND:
+		return "QOS_BACKGROUND";
+	default:
+		return NULL;
+	}
+}
+
 void parse_thread_qos_mapping(enum qos_tag qos_tag, char *policy,
 			      uint64_t runtime, uint32_t uclamp_max);
-void apply_thread_qos_tag(pid_t pid, enum qos_tag qos_tag);
+void apply_thread_qos_tag(pid_t pid, const char *comm, enum qos_tag qos_tag);

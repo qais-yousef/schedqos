@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include "parse_argp.h"
+#include "utils.h"
 
 #define __LOG_OUT(level, fmt, ...) do { \
 	time_t t = time(NULL); \

@@ -11,7 +11,6 @@
 #include <unistd.h>
 
 #include "qos_manager.h"
-#include "utils.h"
 
 /* Structure to wrap netlink message headers and connector payload */
 struct __attribute__ ((aligned(NLMSG_ALIGNTO))) nlcn_msg
