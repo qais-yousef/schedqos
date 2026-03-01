@@ -226,7 +226,7 @@ bool apply_thread_qos(pid_t pid, pid_t tgid, const char *comm)
 	ret = true;
 
 out:
-	LOG_INFO("Applying QoS Tag %s for %d %s", qos_tag_to_char(qos_tag), pid, comm);
+	LOG_INFO("Applying QoS Tag %s for %d:%d %s", qos_tag_to_char(qos_tag), pid, tgid, comm);
 
 	apply_thread_qos_tag(pid, comm, qos_tag);
 
