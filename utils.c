@@ -1,7 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /* Copyright (C) 2026 Qais Yousef */
+#include <ctype.h>
 #include <fcntl.h>
 #include <glib.h>
+#include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -88,3 +90,35 @@ bool get_comm_by_pid(pid_t pid, char *comm)
 	return false;
 }
 
+bool is_numeric(const char *str)
+{
+	if (str == NULL || *str == '\0')
+		return false;
+
+	while (*str) {
+		if (!isdigit((unsigned char)*str))
+			return false;
+		str++;
+	}
+
+	return true;
+}
+
+bool is_fair_task(pid_t pid)
+{
+	int policy = sched_getscheduler(pid);
+
+	if (policy == -1) {
+		LOG_ERROR("Failed to get policy for %d", pid);
+		return false;
+	}
+
+	switch (policy & ~SCHED_RESET_ON_FORK) {
+	case SCHED_OTHER:
+	case SCHED_IDLE:
+	case SCHED_BATCH:
+		return true;
+	default:
+		return false;
+	}
+}

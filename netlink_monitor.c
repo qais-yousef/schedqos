@@ -1,16 +1,56 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /* Copyright (C) 2026 Qais Yousef */
-#include <sys/socket.h>
-#include <linux/netlink.h>
-#include <linux/connector.h>
+#include <dirent.h>
 #include <linux/cn_proc.h>
+#include <linux/connector.h>
+#include <linux/netlink.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 #include "qos_manager.h"
+
+static void iterate_threads(pid_t tgid)
+{
+	char task_path[256];
+	snprintf(task_path, sizeof(task_path), "/proc/%d/task", tgid);
+
+	DIR *tdir = opendir(task_path);
+	struct dirent *tentry;
+
+	while (tdir && (tentry = readdir(tdir)) != NULL) {
+		if (is_numeric(tentry->d_name)) {
+			pid_t pid = atoi(tentry->d_name);
+			char comm[TASK_COMM_LEN];
+
+			if (get_comm_by_pid(pid, comm))
+				apply_thread_qos(pid, tgid, comm);
+		}
+	}
+	if (tdir) closedir(tdir);
+}
+
+static void iterate_processes(void)
+{
+	DIR *dir = opendir("/proc");
+	struct dirent *entry;
+
+	while ((entry = readdir(dir)) != NULL) {
+		if (entry->d_type == DT_DIR && is_numeric(entry->d_name)) {
+			pid_t tgid = atoi(entry->d_name);
+
+			if (tgid < 1000)
+				continue;
+
+			create_app_instance(tgid);
+			iterate_threads(tgid);
+		}
+	}
+	closedir(dir);
+}
 
 /* Structure to wrap netlink message headers and connector payload */
 struct __attribute__ ((aligned(NLMSG_ALIGNTO))) nlcn_msg
@@ -67,10 +107,16 @@ static int set_proc_ev_listen(int nl_sock, int enable)
 
 void netlink_monitor(int nl_sock)
 {
+	static bool do_once = true;
 	struct nlcn_msg msg;
 
 	while (1) {
 		int status;
+
+		if (do_once) {
+			do_once = false;
+			iterate_processes();
+		}
 
 		status = recv(nl_sock, &msg, sizeof(msg), 0);
 		if (status < 0) {

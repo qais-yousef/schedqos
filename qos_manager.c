@@ -210,6 +210,10 @@ bool apply_thread_qos(pid_t pid, pid_t tgid, const char *comm)
 	struct app_config *app;
 	int ret = false;
 
+	/* Only apply the tagging to fair tasks */
+	if (!is_fair_task(pid))
+		return false;
+
 	appi = lookup_app_instance(tgid);
 	if (!appi)
 		goto out;
