@@ -187,7 +187,7 @@ void create_app_instance(const pid_t tgid)
 
 	g_hash_table_insert(app_instance_registry, GINT_TO_POINTER(tgid), app);
 
-	LOG_INFO("New app instance of %s", app->cmdline);
+	LOG_INFO("New app instance of %d %s", tgid, app->cmdline);
 }
 
 void destroy_app_instance(const pid_t tgid)
