@@ -60,11 +60,16 @@ static void __parse_app_config(const char *json_string)
 
 		cJSON *version = cJSON_GetObjectItemCaseSensitive(app_node, "version");
 		cJSON *period = cJSON_GetObjectItemCaseSensitive(app_node, "period");
+		cJSON *qos = cJSON_GetObjectItemCaseSensitive(app_node, "qos");
 
 		if (cJSON_IsString(version))
 			LOG_INFO("  Version: %s", version->valuestring);
 		if (cJSON_IsNumber(period))
 			LOG_INFO("  Period: %d", period->valueint);
+		if (cJSON_IsString(qos)) {
+			LOG_INFO("  QoS: %s", qos->valuestring);
+			add_app_qos_tag(app, qos->valuestring);
+		}
 
 		cJSON *thread_qos = cJSON_GetObjectItemCaseSensitive(app_node, "thread_qos");
 		if (cJSON_IsObject(thread_qos))

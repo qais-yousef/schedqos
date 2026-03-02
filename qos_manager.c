@@ -30,6 +30,7 @@ struct thread_qos {
  */
 struct app_config {
 	char *cmdline;
+	enum qos_tag qos_tag;		/* Default QOS tag for all tasks if not explicitly specified */
 	GHashTable *threads_registry;
 };
 
@@ -117,6 +118,17 @@ void deinit_qos_manager(void)
 	destroy_app_instance_registry();
 }
 
+bool add_app_qos_tag(const void *app, char *qos_tag)
+{
+	struct app_config *_app = (struct app_config *)app;
+
+	_app->qos_tag = char_to_qos_tag(qos_tag);
+
+	LOG_INFO("Set App QoS Tag to %s", qos_tag);
+
+	return true;
+}
+
 bool add_thread_qos_tag(const void *app, const char *comm, char *qos_tag)
 {
 	struct app_config *_app = (struct app_config *)app;
@@ -151,6 +163,7 @@ void *create_app_config(const char *cmdline)
 	LOG_INFO("Creating new app config for %s", cmdline);
 
 	app->cmdline = g_strdup(cmdline);
+	app->qos_tag = QOS_DEFAULT;
 
 	/* We can add (unique) aliases easily by inserting more names to point to app*/
 	g_hash_table_insert(app_config_registry, g_strdup(cmdline), app);
@@ -221,6 +234,8 @@ bool apply_thread_qos(pid_t pid, pid_t tgid, const char *comm)
 	app = lookup_app_config(appi->cmdline);
 	if (!app)
 		goto out;
+
+	qos_tag = app->qos_tag;
 
 	thread = lookup_thread(app, comm);
 	if (!thread)
