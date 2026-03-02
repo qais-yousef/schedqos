@@ -9,6 +9,7 @@
 #include "cJSON.h"
 #include "qos_manager.h"
 #include "qos_tagging.h"
+#include "sched_profiles.h"
 
 #define APP_CONFIGS_PATH	"app_configs/"
 #define QOS_MAPPINGS_FILE	"qos_mappings.json"
@@ -121,22 +122,59 @@ static void __parse_sched_profiles(const char *json_string)
 	cJSON *profile = NULL;
 	cJSON *node = NULL;
 	cJSON_ArrayForEach(profile, root) {
+		void *sched_profile;
+
 		LOG_INFO("Sched Profile: %s", profile->string);
 
-		cJSON_ArrayForEach(node, profile) {
+		sched_profile = create_sched_profile(profile->string);
+		if (!sched_profile)
+			continue;
+
+		cJSON *debugfs = cJSON_GetObjectItemCaseSensitive(profile, "debugfs");
+		cJSON *cpufreq = cJSON_GetObjectItemCaseSensitive(profile, "cpufreq");
+
+		if (!debugfs || !cpufreq) {
+			LOG_ERROR("Incomplete sched profile spec");
+			continue;
+		}
+
+		LOG_INFO("  debugfs");
+		cJSON_ArrayForEach(node, debugfs) {
 			if (cJSON_IsArray(node)) {
 				cJSON *val = NULL;
 				cJSON_ArrayForEach(val, node) {
 					if (cJSON_IsString(val)) {
 						LOG_INFO("	- %s: %s", node->string, val->valuestring);
-					} else if (cJSON_IsNumber(val)) {
-						LOG_INFO("	- %s: %d", node->string, val->valueint);
+						sched_profiles_add_debugfs(sched_profile, node->string, val->valuestring);
+					} else {
+						LOG_ERROR("%s value must be a string", node->string);
 					}
 				}
 			} else if (cJSON_IsString(node)) {
 				LOG_INFO("	- %s: %s", node->string, node->valuestring);
-			} else if (cJSON_IsNumber(node)) {
-				LOG_INFO("	- %s: %d", node->string, node->valueint);
+				sched_profiles_add_debugfs(sched_profile, node->string, node->valuestring);
+			} else {
+				LOG_ERROR("%s value must be a string", node->string);
+			}
+		}
+
+		LOG_INFO("  cpufreq");
+		cJSON_ArrayForEach(node, cpufreq) {
+			if (cJSON_IsArray(node)) {
+				cJSON *val = NULL;
+				cJSON_ArrayForEach(val, node) {
+					if (cJSON_IsString(val)) {
+						LOG_INFO("	- %s: %s", node->string, val->valuestring);
+						sched_profiles_add_cpufreq(sched_profile, node->string, val->valuestring);
+					} else {
+						LOG_ERROR("%s value must be a string", node->string);
+					}
+				}
+			} else if (cJSON_IsString(node)) {
+				LOG_INFO("	- %s: %s", node->string, node->valuestring);
+				sched_profiles_add_cpufreq(sched_profile, node->string, node->valuestring);
+			} else {
+				LOG_ERROR("%s value must be a string", node->string);
 			}
 		}
 	}

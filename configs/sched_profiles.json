@@ -1,14 +1,29 @@
 {
 	"throughput": {
-		"features": ["NO_HRTICK"],
-		"base_slice_ns": 8000000
+		"debugfs": {
+			"features": ["NO_HRTICK"],
+			"base_slice_ns": "8000000"
+		},
+		"cpufreq": {
+			"scaling_governor": "schedutil"
+		}
 	},
 	"interactive": {
-		"features": ["HRTICK"],
-		"base_slice_ns": 4000000
+		"debugfs": {
+			"features": ["HRTICK"],
+			"base_slice_ns": "4000000"
+		},
+		"cpufreq": {
+			"scaling_governor": "schedutil"
+		}
 	},
 	"qos": {
-		"features": "HRTICK",
-		"base_slice_ns": 16000000
+		"debugfs": {
+			"features": ["HRTICK"],
+			"base_slice_ns": "16000000"
+		},
+		"cpufreq": {
+			"scaling_governor": "schedutil"
+		}
 	}
 }

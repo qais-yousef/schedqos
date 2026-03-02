@@ -14,7 +14,9 @@ SCHEDQOS := schedqos
 CJSON_SRC := cJSON.c
 CJSON_HDR := cJSON.h
 
-SRC := schedqos.c parse_argp.c configs_parser.c $(CJSON_SRC) netlink_monitor.c qos_manager.c utils.c qos_tagging.c
+SRC := schedqos.c parse_argp.c configs_parser.c $(CJSON_SRC) \
+       netlink_monitor.c qos_manager.c utils.c qos_tagging.c \
+       sched_profiles.c
 OBJS :=$(subst .c,.o,$(SRC))
 
 ifneq ($(STATIC),)

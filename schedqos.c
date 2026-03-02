@@ -3,6 +3,7 @@
 #include "configs_parser.h"
 #include "netlink_monitor.h"
 #include "qos_manager.h"
+#include "sched_profiles.h"
 
 int main(int argc, char **argv)
 {
@@ -13,6 +14,8 @@ int main(int argc, char **argv)
 		return err;
 
 	init_qos_manager();
+	init_sched_profiles();
 	parse_all_configs();
+	sched_profiles_apply_profile("qos");
 	start_netlink_monitor();
 }
