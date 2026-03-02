@@ -25,8 +25,8 @@
 } while (0)
 
 #define LOG_INFO(fmt, ...)	__LOG_OUT("INFO",  fmt, ##__VA_ARGS__)
-#define LOG_WARN(fmt, ...)	__LOG_ERR("WARN",  fmt, ##__VA_ARGS__)
-#define LOG_ERROR(fmt, ...)	__LOG_ERR("ERROR", fmt, ##__VA_ARGS__)
+#define LOG_WARN(fmt, ...)	__LOG_OUT("WARN",  fmt, ##__VA_ARGS__)
+#define LOG_ERROR(fmt, ...)	__LOG_OUT("ERROR", fmt, ##__VA_ARGS__)
 
 #define LOG_VERBOSE(fmt, ...) do {				\
 	if (sqos_opts.verbose)					\
