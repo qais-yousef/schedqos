@@ -6,8 +6,15 @@
 #include <stdbool.h>
 
 struct sqos_opts {
+	/* main options */
+	const char *command;
+
+	/* common options */
 	const char *configs_path;
 	bool verbose;
+
+	/* sched_profile options */
+	const char *sched_profile;
 };
 
 extern struct sqos_opts sqos_opts;
