@@ -13,6 +13,9 @@ struct sqos_opts {
 	const char *configs_path;
 	bool verbose;
 
+	/* start/restart options*/
+	bool daemon;
+
 	/* sched_profile options */
 	const char *sched_profile;
 };

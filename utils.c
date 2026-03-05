@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <glib.h>
+#include <limits.h>
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -121,4 +122,55 @@ bool is_fair_task(pid_t pid)
 	default:
 		return false;
 	}
+}
+
+pid_t get_pid_by_name(const char *name)
+{
+	DIR *dir = opendir("/proc");
+	struct dirent *entry;
+	pid_t found_pid = -1;
+
+	if (!dir)
+		return -1;
+
+	while ((entry = readdir(dir)) != NULL) {
+		char path[PATH_MAX];
+		char comm[256];
+		FILE *fp;
+
+		if (!isdigit(*entry->d_name))
+			continue;
+
+		snprintf(path, sizeof(path), "/proc/%s/comm", entry->d_name);
+
+		fp = fopen(path, "r");
+		if (fp) {
+			if (fgets(comm, sizeof(comm), fp)) {
+				/* Strip newline */
+				comm[strcspn(comm, "\n")] = 0;
+
+				if (strcmp(comm, name) == 0) {
+					found_pid = strtoul(entry->d_name, NULL, 10);
+					fclose(fp);
+					/* Return the first match */
+					break;
+				}
+			}
+			fclose(fp);
+		}
+	}
+	closedir(dir);
+	return found_pid;
+}
+
+bool kill_by_pid(pid_t pid)
+{
+	if (pid <= 0)
+		return false;
+
+	if (kill(pid, SIGTERM) == 0)
+		return true;
+
+	LOG_ERROR("Failed to kill process: %d", pid);
+		return false;
 }

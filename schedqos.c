@@ -1,11 +1,83 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /* Copyright (C) 2026 Qais Yousef */
+#include <fcntl.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "configs_parser.h"
 #include "netlink_monitor.h"
 #include "qos_manager.h"
 #include "sched_profiles.h"
+
+#define DAEMON_NAME		"schedqosd"
+#define LOG_FILE		"/var/log/schedqosd.log"
+
+
+int redirect_to_log(const char *logfile)
+{
+	int fd = open(logfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
+	if (fd == -1) {
+		LOG_ERROR("Failed to open logfile");
+		return -1;
+	}
+
+	/* Redirect stdout (1) to the log file */
+	if (dup2(fd, STDOUT_FILENO) == -1) {
+		LOG_ERROR("Failed to redirect stdout to log file");
+		return -1;
+	}
+
+	/* Redirect stderr (2) to the log file */
+	if (dup2(fd, STDERR_FILENO) == -1) {
+		LOG_ERROR("Failed to redirect stderr to log file");
+		return -1;
+	}
+
+	close(fd);
+
+	return 0;
+}
+
+static int start_schedqosd(void)
+{
+	pid_t pid = get_pid_by_name("schedqosd");
+	if (pid > 0) {
+		LOG_FATAL("schedqosd already running, pid: %d", pid);
+		return -1;
+	}
+
+	if (sqos_opts.daemon) {
+		if (daemon(0, 1) == -1) {
+			LOG_FATAL("Failed to start %s", DAEMON_NAME);
+			return -1;
+		}
+
+		if (redirect_to_log(LOG_FILE)) {
+			LOG_FATAL("Failed to redirect to log file %s", LOG_FILE);
+			return -1;
+		}
+	}
+
+	if (pthread_setname_np(pthread_self(), DAEMON_NAME) != 0) {
+		LOG_ERROR("Failed to change name to %s", DAEMON_NAME);
+		return -1;
+	}
+
+	init_qos_manager();
+	parse_app_configs();
+	parse_qos_mappings();
+	start_netlink_monitor();
+	return 0;
+}
+
+static int stop_schedqosd(void)
+{
+	pid_t pid = get_pid_by_name("schedqosd");
+	return kill_by_pid(pid);
+}
 
 int main(int argc, char **argv)
 {
@@ -16,16 +88,18 @@ int main(int argc, char **argv)
 		return err;
 
 	if (strcmp(sqos_opts.command, "start") == 0) {
-		init_qos_manager();
-		parse_app_configs();
-		parse_qos_mappings();
-		start_netlink_monitor();
-		return 0;
+		return start_schedqosd();
 	} else if (strcmp(sqos_opts.command, "stop") == 0) {
+		return stop_schedqosd();
 	} else if (strcmp(sqos_opts.command, "restart") == 0) {
+		/* we probably should verify we stopped correctly */
+		stop_schedqosd();
+		start_schedqosd();
 	} else if (strcmp(sqos_opts.command, "sched_profile") == 0) {
 		init_sched_profiles();
 		parse_sched_profiles();
 		sched_profiles_apply_profile(sqos_opts.sched_profile);
 	}
+
+	return 0;
 }

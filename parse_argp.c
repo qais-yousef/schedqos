@@ -12,8 +12,18 @@ const char *argp_program_version = "schedqos " XSTR(SA_VERSION);
 const char *argp_program_bug_address = "<qyousef@layalina.io>";
 
 struct sqos_opts sqos_opts = {
+	/* main options */
+	.command = NULL,
+
+	/* common options */
 	.configs_path = "/var/run/sched_qos",
 	.verbose = false,
+
+	/* start/restart options*/
+	.daemon = false,
+
+	/* sched_profile options */
+	.sched_profile = NULL,
 };
 
 enum sqos_opts_flags {
@@ -28,6 +38,9 @@ static error_t start_parse_arg(int key, char *arg, struct argp_state *state)
 	switch (key) {
 	case OPT_CONFIGS_PATH:
 		sqos_opts.configs_path = arg;
+		break;
+	case 'd':
+		sqos_opts.daemon = true;
 		break;
 	case 'v':
 		sqos_opts.verbose = true;
@@ -52,6 +65,7 @@ static char restart_doc[] =
 
 static const struct argp_option start_options[] = {
 	{ "configs-path", OPT_CONFIGS_PATH, "PATH", 0, "Path to configs file, /var/run/sched_qos/ by default." },
+	{ "daemon", 'd', 0, 0, "Start/restart as a daemon." },
 	{ "verbose", 'v', 0, 0, "Enable verbose logging." },
 	{ 0 },
 };
