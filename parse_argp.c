@@ -16,7 +16,7 @@ struct sqos_opts sqos_opts = {
 	.command = NULL,
 
 	/* common options */
-	.configs_path = "/var/run/sched_qos",
+	.configs_path = "/var/run/schedqos",
 	.verbose = false,
 
 	/* start/restart options*/
