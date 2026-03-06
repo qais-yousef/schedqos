@@ -14,6 +14,14 @@ SCHEDQOS := schedqos
 CJSON_SRC := cJSON.c
 CJSON_HDR := cJSON.h
 
+PREFIX ?= /usr/local
+BINDIR := $(PREFIX)/bin
+CONFIGSDIR := /var/run/schedqos
+
+INSTALL ?= install
+INSTALL_PROGRAM = $(INSTALL) -m 755
+INSTALL_DATA = $(INSTALL) -m 644
+
 SRC := schedqos.c parse_argp.c configs_parser.c $(CJSON_SRC) \
        netlink_monitor.c qos_manager.c utils.c qos_tagging.c \
        sched_profiles.c
@@ -69,6 +77,23 @@ clean:
 clobber: clean
 	$(MAKE) -C clean
 
+install: $(SCHEDQOS)
+	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+	$(INSTALL_PROGRAM) $(SCHEDQOS) $(DESTDIR)$(BINDIR)/$(SCHEDQOS)
+	$(INSTALL) -d $(CONFIGSDIR)/app_configs
+	for config in $(shell ls ./configs/*.json);			\
+	do								\
+		$(INSTALL_DATA) $$config $(CONFIGSDIR);			\
+	done
+	for config in $(shell ls ./configs/app_configs/*.json);		\
+	do								\
+		$(INSTALL_DATA) $$config $(CONFIGSDIR)/app_configs;	\
+	done
+
+uninstall:
+	rm -rf $(DESTDIR)$(BINDIR)/$(SCHEDQOS)
+	rm -rf $(CONFIGSDIR)
+
 help:
 	@echo "Following build targets are available:"
 	@echo ""
@@ -76,6 +101,8 @@ help:
 	@echo "	debug:		Create a debug build which contains verbose debug prints"
 	@echo "	clean:		Clean sched-analyzer, but not dependent libraries"
 	@echo "	clobber:	Clean everything"
+	@echo "	install:	Install the binary and the configs
+	@echo "	uninstall:	Uninstall the binary and the configs
 	@echo ""
 	@echo "Cross compile:"
 	@echo ""
