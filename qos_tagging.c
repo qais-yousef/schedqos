@@ -182,6 +182,33 @@ static struct sched_attr *get_sa_from_qos_tag(enum qos_tag qos_tag)
 	return sa;
 }
 
+static int copy_sa_from_qos_tag(enum qos_tag qos_tag, struct sched_attr *sa)
+{
+
+	switch (qos_tag) {
+	case QOS_USER_INTERACTIVE:
+		*sa = sa_qos_user_interactive;
+		break;
+	case QOS_USER_INITIATED:
+		*sa = sa_qos_user_initiated;
+		break;
+	case QOS_UTILITY:
+		*sa = sa_qos_utility;
+		break;
+	case QOS_BACKGROUND:
+		*sa = sa_qos_background;
+		break;
+	case QOS_DEFAULT:
+		*sa = sa_qos_default;
+		break;
+	default:
+		LOG_ERROR("Unknown QoS Tag %d", qos_tag);
+		return -1;
+	}
+
+	return 0;
+}
+
 void parse_thread_qos_mapping_str(enum qos_tag qos_tag, char *attr, char *value)
 {
 	struct sched_attr *sa = get_sa_from_qos_tag(qos_tag);
@@ -220,19 +247,29 @@ void parse_thread_qos_mapping_int(enum qos_tag qos_tag, char *attr, int value)
 		LOG_ERROR("Unknown int sched_attr: %s", attr);
 }
 
-void apply_thread_qos_tag(pid_t pid, const char *comm, enum qos_tag qos_tag)
+void apply_thread_qos_tag(pid_t pid, const char *comm, enum qos_tag qos_tag, uint64_t period)
 {
-	struct sched_attr *sa = get_sa_from_qos_tag(qos_tag);
+	struct sched_attr sa = {};
 	int ret;
 
-	if (!sa)
+	ret = copy_sa_from_qos_tag(qos_tag, &sa);
+	if (ret)
 		return;
 
 	log_qos_tag_attr(qos_tag);
 	log_thread_attr(pid);
 
+	switch (qos_tag) {
+	case QOS_USER_INTERACTIVE:
+	case QOS_USER_INITIATED:
+		if (period)
+			sa.sched_period = period;
+	default:
+		break;
+	}
+
 	LOG_INFO("Applying QoS Tag %s for %d %s", qos_tag_to_char(qos_tag), pid, comm);
-	ret = sched_setattr(pid, sa, 0);
+	ret = sched_setattr(pid, &sa, 0);
 	if (ret)
 		LOG_ERROR("Failed to change sched_attr for %d", pid);
 

@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /* Copyright (C) 2026 Qais Yousef */
 #include <stdbool.h>
+#include <stdint.h>
 #include <sys/types.h>
 
 enum qos_tag;
@@ -8,6 +9,7 @@ enum qos_tag;
 void init_qos_manager(void);
 void deinit_qos_manager(void);
 bool add_app_qos_tag(const void *app, char *qos_tag);
+bool add_app_period(const void *app, uint64_t period);
 bool add_thread_qos_tag(const void *app, const char *comm, char *qos_tag);
 void *create_app_config(const char *cmdline);
 void create_app_instance(const pid_t tgid);

@@ -11,7 +11,7 @@
 #include "qos_tagging.h"
 #include "sched_profiles.h"
 
-#define APP_CONFIGS_PATH	"app_configs/"
+#define APP_CONFIGS_PATH	"app_configs"
 #define QOS_MAPPINGS_FILE	"qos_mappings.json"
 #define SCHED_PROFILES_FILE	"sched_profiles.json"
 
@@ -62,10 +62,13 @@ static void __parse_app_config(const char *json_string)
 		cJSON *period = cJSON_GetObjectItemCaseSensitive(app_node, "period");
 		cJSON *qos = cJSON_GetObjectItemCaseSensitive(app_node, "qos");
 
-		if (cJSON_IsString(version))
+		if (cJSON_IsString(version)) {
 			LOG_INFO("  Version: %s", version->valuestring);
-		if (cJSON_IsNumber(period))
+		}
+		if (cJSON_IsNumber(period)) {
 			LOG_INFO("  Period: %d", period->valueint);
+			add_app_period(app, period->valueint);
+		}
 		if (cJSON_IsString(qos)) {
 			LOG_INFO("  QoS: %s", qos->valuestring);
 			add_app_qos_tag(app, qos->valuestring);

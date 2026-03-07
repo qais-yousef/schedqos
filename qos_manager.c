@@ -31,6 +31,7 @@ struct thread_qos {
 struct app_config {
 	char *cmdline;
 	enum qos_tag qos_tag;		/* Default QOS tag for all tasks if not explicitly specified */
+	uint64_t period;		/* period in ns */
 	GHashTable *threads_registry;
 };
 
@@ -116,6 +117,17 @@ void deinit_qos_manager(void)
 {
 	destroy_app_config_registry();
 	destroy_app_instance_registry();
+}
+
+bool add_app_period(const void *app, uint64_t period)
+{
+	struct app_config *_app = (struct app_config *)app;
+
+	_app->period = period;
+
+	LOG_INFO("Set App Period to %lu", period);
+
+	return true;
 }
 
 bool add_app_qos_tag(const void *app, char *qos_tag)
@@ -221,6 +233,7 @@ bool apply_thread_qos(pid_t pid, pid_t tgid, const char *comm)
 	struct app_instance *appi;
 	struct thread_qos *thread;
 	struct app_config *app;
+	uint64_t period = 0;
 	int ret = false;
 
 	/* Only apply the tagging to fair tasks */
@@ -236,6 +249,7 @@ bool apply_thread_qos(pid_t pid, pid_t tgid, const char *comm)
 		goto out;
 
 	qos_tag = app->qos_tag;
+	period = app->period;
 
 	thread = lookup_thread(app, comm);
 	if (!thread)
@@ -247,7 +261,7 @@ bool apply_thread_qos(pid_t pid, pid_t tgid, const char *comm)
 out:
 	LOG_INFO("Applying QoS Tag %s for %d:%d %s", qos_tag_to_char(qos_tag), pid, tgid, comm);
 
-	apply_thread_qos_tag(pid, comm, qos_tag);
+	apply_thread_qos_tag(pid, comm, qos_tag, period);
 
 	return ret;
 }
