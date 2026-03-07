@@ -5,9 +5,6 @@ Build:
 make && sudo make install
 ```
 
-There's a known compilation error due to bad handling of defining sched_attr
-for systems that do have it in <sched.h>.
-
 Start/stop/restart the daemon
 =============================
 
