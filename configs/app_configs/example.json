@@ -1,0 +1,15 @@
+{
+	"chrome": {
+		"period": 16000000,
+		"qos": "QOS_USER_INTERACTIVE"
+	},
+	"make": {
+		"qos": "QOS_BACKGROUND"
+	},
+	"gcc": {
+		"qos": "QOS_BACKGROUND"
+	},
+	"cc1": {
+		"qos": "QOS_BACKGROUND"
+	}
+}

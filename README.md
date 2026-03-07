@@ -9,6 +9,8 @@ detach application description from scheduler specifics; to maintain
 scalability and portability for that description to Just Work across kernels
 and hardware.
 
+For usage, check this [guide](USAGE.md)
+
 QoS Tags
 ========
 
