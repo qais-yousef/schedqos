@@ -199,8 +199,8 @@ void create_app_instance(const pid_t tgid)
 		return;
 
 	if (lookup_app_instance(tgid)) {
-		LOG_ERROR("App instance for %d was already created", tgid);
-		return;
+		LOG_WARN("App instance for %d was already created, overriding", tgid);
+		destroy_app_instance(tgid);
 	}
 
 	app->cmdline = get_cmdline_by_pid(tgid);
