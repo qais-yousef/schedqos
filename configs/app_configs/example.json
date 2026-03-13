@@ -11,5 +11,11 @@
 	},
 	"cc1": {
 		"qos": "QOS_BACKGROUND"
+	},
+	"schbench": {
+		"thread_qos": {
+			"schbench-msg": "QOS_USER_INTERACTIVE",
+			"schbench-worker": "QOS_USER_INITIATED"
+		}
 	}
 }
