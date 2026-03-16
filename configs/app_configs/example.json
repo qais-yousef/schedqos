@@ -17,5 +17,11 @@
 			"schbench-msg": "QOS_USER_INTERACTIVE",
 			"schbench-worker": "QOS_USER_INITIATED"
 		}
+	},
+	"hackbench": {
+		"qos": "QOS_BACKGROUND"
+	},
+	"cyclictest": {
+		"qos": "QOS_USER_INTERACTIVE"
 	}
 }
