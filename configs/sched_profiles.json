@@ -1,7 +1,7 @@
 {
 	"throughput": {
 		"debugfs": {
-			"features": ["NO_HRTICK"],
+			"features": ["NO_HRTICK", "RUN_TO_PARITY"],
 			"base_slice_ns": "8000000"
 		},
 		"cpufreq": {
@@ -10,7 +10,7 @@
 	},
 	"interactive": {
 		"debugfs": {
-			"features": ["HRTICK"],
+			"features": ["HRTICK", "NO_RUN_TO_PARITY"],
 			"base_slice_ns": "4000000"
 		},
 		"cpufreq": {
@@ -19,7 +19,7 @@
 	},
 	"qos": {
 		"debugfs": {
-			"features": ["HRTICK"],
+			"features": ["HRTICK", "NO_RUN_TO_PARITY"],
 			"base_slice_ns": "16000000"
 		},
 		"cpufreq": {
