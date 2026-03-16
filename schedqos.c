@@ -16,7 +16,7 @@
 #define LOG_FILE		"/var/log/schedqosd.log"
 
 
-int redirect_to_log(const char *logfile)
+static int redirect_to_log(const char *logfile)
 {
 	int fd = open(logfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (fd == -1) {
@@ -39,6 +39,13 @@ int redirect_to_log(const char *logfile)
 	close(fd);
 
 	return 0;
+}
+
+static void apply_sched_profile(const char *profile)
+{
+	init_sched_profiles();
+	parse_sched_profiles();
+	sched_profiles_apply_profile(profile);
 }
 
 static int start_schedqosd(void)
@@ -69,6 +76,8 @@ static int start_schedqosd(void)
 	init_qos_manager();
 	parse_app_configs();
 	parse_qos_mappings();
+	/* schedqosd assumes qos sched_profile, apply automatically */
+	apply_sched_profile("qos");
 	start_netlink_monitor();
 	return 0;
 }
@@ -76,7 +85,11 @@ static int start_schedqosd(void)
 static int stop_schedqosd(void)
 {
 	pid_t pid = get_pid_by_name("schedqosd");
-	return kill_by_pid(pid);
+	int ret;
+
+	ret = kill_by_pid(pid);
+	sleep(1);
+	return ret;
 }
 
 int main(int argc, char **argv)
@@ -96,9 +109,7 @@ int main(int argc, char **argv)
 		stop_schedqosd();
 		start_schedqosd();
 	} else if (strcmp(sqos_opts.command, "sched_profile") == 0) {
-		init_sched_profiles();
-		parse_sched_profiles();
-		sched_profiles_apply_profile(sqos_opts.sched_profile);
+		apply_sched_profile(sqos_opts.sched_profile);
 	}
 
 	return 0;

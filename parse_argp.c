@@ -65,7 +65,7 @@ static char restart_doc[] =
 
 static const struct argp_option start_options[] = {
 	{ "configs-path", OPT_CONFIGS_PATH, "PATH", 0, "Path to configs file, /var/run/sched_qos/ by default." },
-	{ "daemon", 'd', 0, 0, "Start/restart as a daemon." },
+	{ "daemon", 'd', 0, 0, "Start/restart as a daemon. Applies 'qos' sched_profile." },
 	{ "verbose", 'v', 0, 0, "Enable verbose logging." },
 	{ 0 },
 };
