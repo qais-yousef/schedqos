@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "configs_parser.h"
@@ -14,11 +15,51 @@
 
 #define DAEMON_NAME		"schedqosd"
 #define LOG_FILE		"/var/log/schedqosd.log"
+#define MAX_PATH		1024
 
+
+static int save_old_log(const char *loogfile)
+{
+	char new_path[MAX_PATH];
+	struct stat st;
+	int i = 1;
+
+	if (stat(LOG_FILE, &st) != 0 || st.st_size == 0) {
+		/* Nothing to rotate */
+		return 0;
+	}
+
+	while (1) {
+		snprintf(new_path, MAX_PATH, "%s.%d", LOG_FILE, i);
+		if (access(new_path, F_OK) != 0) {
+			/* Found an available suffix */
+			break;
+		}
+		i++;
+	}
+
+	if (rename(LOG_FILE, new_path) == 0) {
+		FILE *fp = fopen(LOG_FILE, "w");
+		if (fp) {
+			fclose(fp);
+			chmod(LOG_FILE, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+		}
+		LOG_INFO("Rotated %s to %s\n", LOG_FILE, new_path);
+	} else {
+		LOG_WARN("Error renaming log file");
+		return -1;
+	}
+
+	return 0;
+}
 
 static int redirect_to_log(const char *logfile)
 {
-	int fd = open(logfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
+	int fd;
+
+	save_old_log(logfile);
+
+	fd = open(logfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (fd == -1) {
 		LOG_ERROR("Failed to open logfile");
 		return -1;
