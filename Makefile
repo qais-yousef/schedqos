@@ -28,7 +28,6 @@ SRC := schedqos.c parse_argp.c configs_parser.c $(CJSON_SRC) \
 OBJS :=$(subst .c,.o,$(SRC))
 
 ifneq ($(STATIC),)
-	LDFLAGS := $(LDFLAGS) $(shell [ $$(find /usr/lib -name libzstd.a | grep .) ] && echo -lzstd)
 	LDFLAGS := $(LDFLAGS) -static
 endif
 
@@ -46,6 +45,8 @@ $(CJSON_SRC):
 	git submodule update
 	cp cJSON/cJSON.c .
 	cp cJSON/cJSON.h .
+
+$(OBJS): $(shell ls *.h)
 
 $(SCHEDQOS): $(OBJS)
 	$(CC) $(CFLAGS) $(INCLUDES) $(filter %.o,$^) $(LDFLAGS) -o $@
