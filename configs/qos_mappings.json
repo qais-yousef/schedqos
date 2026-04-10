@@ -2,12 +2,14 @@
 	"QOS_USER_INTERACTIVE": {
 		"sched_policy": "SCHED_NORMAL",
 		"sched_nice": -4,
-		"sched_runtime": 8000000
+		"sched_runtime": 8000000,
+		"sched_util_max": 1024
 	},
 	"QOS_USER_INITIATED": {
 		"sched_policy": "SCHED_NORMAL",
 		"sched_nice": -2,
-		"sched_runtime": 12000000
+		"sched_runtime": 12000000,
+		"sched_util_max": 768
 	},
 	"QOS_UTILITY": {
 		"sched_policy": "SCHED_BATCH",
