@@ -1,24 +1,29 @@
 {
 	"QOS_USER_INTERACTIVE": {
 		"sched_policy": "SCHED_NORMAL",
+		"sched_nice": -4,
 		"sched_runtime": 8000000
 	},
 	"QOS_USER_INITIATED": {
 		"sched_policy": "SCHED_NORMAL",
-		"sched_runtime": 10000000
+		"sched_nice": -2,
+		"sched_runtime": 12000000
 	},
 	"QOS_UTILITY": {
 		"sched_policy": "SCHED_BATCH",
+		"sched_nice": 2,
 		"sched_runtime": 16000000,
 		"sched_util_max": 512
 	},
 	"QOS_BACKGROUND": {
 		"sched_policy": "SCHED_BATCH",
+		"sched_nice": 4,
 		"sched_runtime": 20000000,
 		"sched_util_max": 256
 	},
-	"DEFAULT": {
+	"QOS_DEFAULT": {
 		"sched_policy": "SCHED_BATCH",
+		"sched_nice": 2,
 		"sched_runtime": 16000000,
 		"sched_util_max": 512
 	}
