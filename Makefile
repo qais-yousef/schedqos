@@ -16,7 +16,7 @@ CJSON_HDR := cJSON.h
 
 PREFIX ?= /usr/local
 BINDIR := $(PREFIX)/bin
-CONFIGSDIR := /var/run/schedqos
+CONFIGSDIR := /etc/schedqos
 
 INSTALL ?= install
 INSTALL_PROGRAM = $(INSTALL) -m 755
