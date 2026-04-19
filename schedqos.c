@@ -141,6 +141,9 @@ int main(int argc, char **argv)
 	if (err)
 		return err;
 
+	if (!sqos_opts.command)
+		return 0;
+
 	if (strcmp(sqos_opts.command, "start") == 0) {
 		return start_schedqosd();
 	} else if (strcmp(sqos_opts.command, "stop") == 0) {
