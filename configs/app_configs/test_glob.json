@@ -1,0 +1,18 @@
+{
+	"com.android.chrome*": {
+		"period": 16000000,
+		"qos": "QOS_USER_INTERACTIVE"
+	},
+	"com.example.app*": {
+		"qos": "QOS_USER_INITIATED"
+	},
+	"exact_app": {
+		"qos": "QOS_BACKGROUND"
+	},
+	"worker*": {
+		"thread_qos": {
+			"main": "QOS_USER_INTERACTIVE",
+			"bg_*": "QOS_BACKGROUND"
+		}
+	}
+}
