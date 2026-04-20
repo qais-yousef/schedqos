@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /* Copyright (C) 2026 Qais Yousef */
+#include <fnmatch.h>
 #include <glib.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -58,7 +59,19 @@ static void destroy_threads_registry(struct app_config *app)
 
 static void* lookup_thread(struct app_config *app, const char *comm)
 {
-	return g_hash_table_lookup(app->threads_registry, comm);
+	void *thread = g_hash_table_lookup(app->threads_registry, comm);
+	if (thread)
+		return thread;
+
+	/* Fast path missed: try glob patterns */
+	GHashTableIter iter;
+	gpointer key, value;
+	g_hash_table_iter_init(&iter, app->threads_registry);
+	while (g_hash_table_iter_next(&iter, &key, &value)) {
+		if (fnmatch((const char *)key, comm, 0) == 0)
+			return value;
+	}
+	return NULL;
 }
 
 static void free_app_config(gpointer data)
@@ -81,7 +94,19 @@ static void destroy_app_config_registry(void)
 
 static void* lookup_app_config(const char *cmdline)
 {
-	return g_hash_table_lookup(app_config_registry, cmdline);
+	void *app = g_hash_table_lookup(app_config_registry, cmdline);
+	if (app)
+		return app;
+
+	/* Fast path missed: try glob patterns */
+	GHashTableIter iter;
+	gpointer key, value;
+	g_hash_table_iter_init(&iter, app_config_registry);
+	while (g_hash_table_iter_next(&iter, &key, &value)) {
+		if (fnmatch((const char *)key, cmdline, 0) == 0)
+			return value;
+	}
+	return NULL;
 }
 
 static void free_app_instance(gpointer data)
