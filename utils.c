@@ -13,34 +13,19 @@
 #include "utils.h"
 
 /*
- * Returns the short name for the cmdline. Callers must call g_free() on the
- * returned pointer.
- */
-gchar* get_short_name(const gchar *cmdline) {
-	gchar *basename;
-	gchar **parts;
-
-	if (!cmdline || *cmdline == '\0')
-		return NULL;
-
-	parts = g_strsplit(cmdline, " ", 2);
-	basename = g_path_get_basename(parts[0]);
-
-	g_strfreev(parts);
-
-	return basename;
-}
-
-/*
- * Reads cmdline for a pid and returns a copy. Callers must ensure to g_free()
- * the copy.
+ * Reads cmdline for a pid and returns argv[0] (full path, no arguments).
+ * Callers must ensure to g_free() the returned pointer.
+ *
+ * Returns the full path of the binary, e.g. /usr/bin/python3, or the package
+ * name for Android Java apps (e.g. com.android.chrome) which have no path
+ * prefix in their cmdline.
  */
 char *get_cmdline_by_pid(pid_t pid)
 {
 	ssize_t bytes_read;
 	char buffer[4096];
 	char path[64];
-	int fd, i;
+	int fd;
 
 	snprintf(path, sizeof(path), "/proc/%d/cmdline", pid);
 
@@ -54,19 +39,10 @@ char *get_cmdline_by_pid(pid_t pid)
 	if (bytes_read <= 0)
 		return NULL;
 
+	/* argv[0] is the first NUL-terminated token; terminate there */
 	buffer[bytes_read] = '\0';
 
-	/*
-	 * Replace internal NULLs with spaces to create a single string
-	 * The kernel puts a NULL after the last argument
-	 */
-	for (i = 0; i < bytes_read - 1; i++) {
-		if (buffer[i] == '\0') {
-			buffer[i] = ' ';
-		}
-	}
-
-	return get_short_name(buffer);
+	return g_strdup(buffer);
 }
 
 bool get_comm_by_pid(pid_t pid, char *comm)

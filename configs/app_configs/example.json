@@ -1,27 +1,37 @@
 {
-	"chrome": {
+	"*/chrome": {
 		"period": 16000000,
 		"qos": "QOS_USER_INTERACTIVE"
 	},
-	"make": {
+	"*/make": {
 		"qos": "QOS_BACKGROUND"
 	},
-	"gcc": {
+	"*/gcc": {
 		"qos": "QOS_BACKGROUND"
 	},
-	"cc1": {
+	"*/cc1": {
 		"qos": "QOS_BACKGROUND"
 	},
-	"schbench": {
+	"*/schbench": {
 		"thread_qos": {
 			"schbench-msg": "QOS_USER_INTERACTIVE",
 			"schbench-worker": "QOS_USER_INITIATED"
 		}
 	},
-	"hackbench": {
+	"*/hackbench": {
 		"qos": "QOS_BACKGROUND"
 	},
-	"cyclictest": {
+	"*/cyclictest": {
+		"qos": "QOS_USER_INTERACTIVE"
+	},
+	"/usr/sbin/nginx": {
+		"qos": "QOS_USER_INTERACTIVE"
+	},
+	"/opt/nginx-test/sbin/nginx": {
+		"qos": "QOS_BACKGROUND"
+	},
+	"com.android.chrome*": {
+		"period": 16000000,
 		"qos": "QOS_USER_INTERACTIVE"
 	}
 }
