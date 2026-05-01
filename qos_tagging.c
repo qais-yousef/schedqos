@@ -8,7 +8,7 @@
 static struct sched_attr sa_qos_user_interactive = {
 	.size = sizeof(struct sched_attr),
 	.sched_policy = SCHED_OTHER,
-	.sched_flags = SCHED_FLAG_RESET_ON_FORK | SCHED_FLAG_UTIL_CLAMP_MIN | SCHED_FLAG_UTIL_CLAMP_MAX,
+	.sched_flags = SCHED_FLAG_RESET_ON_FORK | SCHED_FLAG_UTIL_CLAMP_MIN | SCHED_FLAG_UTIL_CLAMP_MAX | SCHED_FLAG_QOS,
 	.sched_nice = 0,
 	.sched_priority = 0,
 	.sched_runtime = 0,
@@ -21,7 +21,7 @@ static struct sched_attr sa_qos_user_interactive = {
 static struct sched_attr sa_qos_user_initiated = {
 	.size = sizeof(struct sched_attr),
 	.sched_policy = SCHED_OTHER,
-	.sched_flags = SCHED_FLAG_RESET_ON_FORK | SCHED_FLAG_UTIL_CLAMP_MIN | SCHED_FLAG_UTIL_CLAMP_MAX,
+	.sched_flags = SCHED_FLAG_RESET_ON_FORK | SCHED_FLAG_UTIL_CLAMP_MIN | SCHED_FLAG_UTIL_CLAMP_MAX | SCHED_FLAG_QOS,
 	.sched_nice = 0,
 	.sched_priority = 0,
 	.sched_runtime = 0,
@@ -34,7 +34,7 @@ static struct sched_attr sa_qos_user_initiated = {
 static struct sched_attr sa_qos_utility = {
 	.size = sizeof(struct sched_attr),
 	.sched_policy = SCHED_BATCH,
-	.sched_flags = SCHED_FLAG_RESET_ON_FORK | SCHED_FLAG_UTIL_CLAMP_MIN | SCHED_FLAG_UTIL_CLAMP_MAX,
+	.sched_flags = SCHED_FLAG_RESET_ON_FORK | SCHED_FLAG_UTIL_CLAMP_MIN | SCHED_FLAG_UTIL_CLAMP_MAX | SCHED_FLAG_QOS,
 	.sched_nice = 0,
 	.sched_priority = 0,
 	.sched_runtime = 0,
@@ -47,7 +47,7 @@ static struct sched_attr sa_qos_utility = {
 static struct sched_attr sa_qos_background = {
 	.size = sizeof(struct sched_attr),
 	.sched_policy = SCHED_BATCH,
-	.sched_flags = SCHED_FLAG_RESET_ON_FORK | SCHED_FLAG_UTIL_CLAMP_MIN | SCHED_FLAG_UTIL_CLAMP_MAX,
+	.sched_flags = SCHED_FLAG_RESET_ON_FORK | SCHED_FLAG_UTIL_CLAMP_MIN | SCHED_FLAG_UTIL_CLAMP_MAX | SCHED_FLAG_QOS,
 	.sched_nice = 0,
 	.sched_priority = 0,
 	.sched_runtime = 0,
@@ -60,7 +60,7 @@ static struct sched_attr sa_qos_background = {
 static struct sched_attr sa_qos_default = {
 	.size = sizeof(struct sched_attr),
 	.sched_policy = SCHED_BATCH,
-	.sched_flags = SCHED_FLAG_RESET_ON_FORK | SCHED_FLAG_UTIL_CLAMP_MIN | SCHED_FLAG_UTIL_CLAMP_MAX,
+	.sched_flags = SCHED_FLAG_RESET_ON_FORK | SCHED_FLAG_UTIL_CLAMP_MIN | SCHED_FLAG_UTIL_CLAMP_MAX | SCHED_FLAG_QOS,
 	.sched_nice = 0,
 	.sched_priority = 0,
 	.sched_runtime = 0,
@@ -92,6 +92,18 @@ static uint32_t char_to_policy(char *policy)
 		return SCHED_DEADLINE;
 	else
 		return SCHED_OTHER;
+}
+
+static uint32_t char_to_sched_qos_type(char *sched_qos_type)
+{
+	if (!sched_qos_type)
+		return SCHED_QOS_NONE;
+
+	if (strcmp(sched_qos_type, "SCHED_QOS_RAMPUP_MULTIPLIER") == 0)
+		return SCHED_QOS_RAMPUP_MULTIPLIER;
+
+	LOG_ERROR("Unknown sched_qos_type %s", sched_qos_type);
+	return SCHED_QOS_NONE;
 }
 
 static void log_qos_tag_attr(enum qos_tag qos_tag)
@@ -132,6 +144,9 @@ static void log_qos_tag_attr(enum qos_tag qos_tag)
 	LOG_VERBOSE("\t.sched_period: %lu", sa->sched_period);
 	LOG_VERBOSE("\t.sched_util_min: %u", sa->sched_util_min);
 	LOG_VERBOSE("\t.sched_util_max: %u", sa->sched_util_max);
+	LOG_VERBOSE("\t.sched_qos_type: %u", sa->sched_qos_type);
+	LOG_VERBOSE("\t.sched_qos_value: %lu", sa->sched_qos_value);
+	LOG_VERBOSE("\t.sched_qos_cookie: %u", sa->sched_qos_cookie);
 }
 
 static void log_thread_attr(pid_t pid)
@@ -141,6 +156,7 @@ static void log_thread_attr(pid_t pid)
 	if (!sqos_opts.verbose)
 		return;
 
+	sa.sched_qos_type = SCHED_QOS_RAMPUP_MULTIPLIER;
 	sched_getattr(pid, &sa, sizeof(struct sched_attr), 0);
 
 	LOG_VERBOSE("%d sched_attr:", pid);
@@ -153,6 +169,9 @@ static void log_thread_attr(pid_t pid)
 	LOG_VERBOSE("\t.sched_period: %lu", sa.sched_period);
 	LOG_VERBOSE("\t.sched_util_min: %u", sa.sched_util_min);
 	LOG_VERBOSE("\t.sched_util_max: %u", sa.sched_util_max);
+	LOG_VERBOSE("\t.sched_qos_type: %u", sa.sched_qos_type);
+	LOG_VERBOSE("\t.sched_qos_value: %lu", sa.sched_qos_value);
+	LOG_VERBOSE("\t.sched_qos_cookie: %u", sa.sched_qos_cookie);
 }
 
 static struct sched_attr *get_sa_from_qos_tag(enum qos_tag qos_tag)
@@ -218,6 +237,8 @@ void parse_thread_qos_mapping_str(enum qos_tag qos_tag, char *attr, char *value)
 
 	if (strcmp(attr, "sched_policy") == 0)
 		sa->sched_policy = char_to_policy(value);
+	else if (strcmp(attr, "sched_qos_type") == 0)
+		sa->sched_qos_type = char_to_sched_qos_type(value);
 	else
 		LOG_ERROR("Unknown str sched_attr: %s", attr);
 }
@@ -243,6 +264,8 @@ void parse_thread_qos_mapping_int(enum qos_tag qos_tag, char *attr, int value)
 		sa->sched_util_min = value;
 	else if (strcmp(attr, "sched_util_max") == 0)
 		sa->sched_util_max = value;
+	else if (strcmp(attr, "sched_qos_value") == 0)
+		sa->sched_qos_value = value;
 	else
 		LOG_ERROR("Unknown int sched_attr: %s", attr);
 }

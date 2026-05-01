@@ -19,6 +19,13 @@
 #define SCHED_FLAG_KEEP_PARAMS		0x10
 #define SCHED_FLAG_UTIL_CLAMP_MIN	0x20
 #define SCHED_FLAG_UTIL_CLAMP_MAX	0x40
+#define SCHED_FLAG_QOS			0x80
+
+enum sched_qos_type {
+	SCHED_QOS_NONE,
+	SCHED_QOS_RAMPUP_MULTIPLIER,
+	SCHED_QOS_MAX,
+};
 
 struct sched_attr {
 	uint32_t size;
@@ -40,6 +47,10 @@ struct sched_attr {
 	/* Utilization hints */
 	uint32_t sched_util_min;
 	uint32_t sched_util_max;
+
+	uint32_t sched_qos_type;
+	int64_t sched_qos_value;
+	uint32_t sched_qos_cookie;
 
 };
 
