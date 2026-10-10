@@ -36,10 +36,15 @@ char *get_cmdline_by_pid(pid_t pid)
 	bytes_read = read(fd, buffer, sizeof(buffer) - 1);
 	close(fd);
 
-	if (bytes_read <= 0)
+	if (bytes_read < 0)
 		return NULL;
-
-	buffer[bytes_read] = '\0';
+	/*
+	 * If cmdline is empty, it is a kernel thread, use its comm as cmdline.
+	 */
+	if (bytes_read == 0)
+		get_comm_by_pid(pid, buffer);
+	else
+		buffer[bytes_read] = '\0';
 
 	/*
 	 * argv[0] is the first NUL-terminated token in /proc/<pid>/cmdline.
