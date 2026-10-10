@@ -1,0 +1,8 @@
+{
+	"rcu_preempt": {
+		"qos": "QOS_USER_INTERACTIVE"
+	},
+	"kworker/*H*": {
+		"qos": "QOS_USER_INTERACTIVE"
+	}
+}
