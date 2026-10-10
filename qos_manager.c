@@ -288,6 +288,14 @@ bool apply_thread_qos(pid_t pid, pid_t tgid, const char *comm)
 		return false;
 
 	appi = lookup_app_instance(tgid);
+	if (!appi) {
+		/*
+		 * /proc/<tgid>/cmdline might not be ready when PROC_EVENT_EXEC
+		 * fires. Retry here; by PROC_EVENT_COMM it is stable.
+		 */
+		create_app_instance(tgid);
+		appi = lookup_app_instance(tgid);
+	}
 	if (!appi)
 		goto out;
 
