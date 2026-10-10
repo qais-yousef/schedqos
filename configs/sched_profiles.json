@@ -19,7 +19,7 @@
 	},
 	"qos": {
 		"debugfs": {
-			"features": ["HRTICK"],
+			"features": ["HRTICK", "NO_SIS_UTIL"],
 			"base_slice_ns": "16000000"
 		},
 		"cpufreq": {
