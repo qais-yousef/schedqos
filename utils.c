@@ -25,7 +25,7 @@ char *get_cmdline_by_pid(pid_t pid)
 	ssize_t bytes_read;
 	char buffer[4096];
 	char path[64];
-	int fd;
+	int fd, i = 0;
 
 	snprintf(path, sizeof(path), "/proc/%d/cmdline", pid);
 
@@ -56,6 +56,18 @@ char *get_cmdline_by_pid(pid_t pid)
 	char *space = strchr(buffer, ' ');
 	if (space)
 		*space = '\0';
+
+	/*
+	 * Convert windows backlashes in path to linux forward slashes. Can
+	 * happen in apps like steam which emulates windows games.
+	 *
+	 * If the backslash is a real part of the name we are in small trouble.
+	 */
+	while (buffer[i]) {
+		if (buffer[i] == '\\')
+			buffer[i] = '/';
+		i++;
+	}
 
 	return g_strdup(buffer);
 }

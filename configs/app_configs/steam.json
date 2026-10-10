@@ -1,0 +1,22 @@
+{
+	"steam": {
+		"period": 16000000,
+		"qos": "QOS_UTILITY"
+	},
+	"steamwebhelper": {
+		"period": 16000000,
+		"qos": "QOS_UTILITY"
+	},
+	"fossilize_replay": {
+		"period": 16000000,
+		"qos": "QOS_USER_INITIATED"
+	},
+	"Proton": {
+		"period": 16000000,
+		"qos": "QOS_USER_INTERACTIVE"
+	},
+	"*/steamapps/common/*": {
+		"period": 16000000,
+		"qos": "QOS_USER_INTERACTIVE"
+	}
+}
