@@ -1,0 +1,5 @@
+{
+	"nginx": {
+		"qos": "QOS_USER_INTERACTIVE"
+	}
+}

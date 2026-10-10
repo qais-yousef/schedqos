@@ -1,0 +1,17 @@
+{
+	"make": {
+		"qos": "QOS_BACKGROUND"
+	},
+	"gcc": {
+		"qos": "QOS_BACKGROUND"
+	},
+	"cc1": {
+		"qos": "QOS_BACKGROUND"
+	},
+	"*/scripts/genksyms/genksyms": {
+		"qos": "QOS_BACKGROUND"
+	},
+	"pahole": {
+		"qos": "QOS_BACKGROUND"
+	}
+}
