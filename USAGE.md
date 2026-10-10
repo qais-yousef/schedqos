@@ -18,9 +18,8 @@ Log file will be stored in `/var/log/schedqosd.log`
 
 Omit `--daemon` to start in fg.
 
-Once run it'll modify sched_attr for all tasks starting from pid 1000 (still
-deciding how to handle kernel threads) and this can't be undone without
-a reboot yet.
+Once run it'll modify sched_attr for all fair tasks. This can't be undone
+without a reboot at the moment.
 
 You can modify the mapping and restart the service and it'll pick the new
 changes and apply them.

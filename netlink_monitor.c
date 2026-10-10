@@ -42,9 +42,6 @@ static void iterate_processes(void)
 		if (entry->d_type == DT_DIR && is_numeric(entry->d_name)) {
 			pid_t tgid = atoi(entry->d_name);
 
-			if (tgid < 1000)
-				continue;
-
 			create_app_instance(tgid);
 			iterate_threads(tgid);
 		}
