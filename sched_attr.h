@@ -4,6 +4,10 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#define SCHED_ATTR_SIZE_VER0    48
+#define SCHED_ATTR_SIZE_VER1    56
+#define SCHED_ATTR_SIZE_VER2    72
+
 #define SCHED_NORMAL		0
 #define SCHED_OTHER		0
 #define SCHED_FIFO		1

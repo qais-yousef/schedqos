@@ -292,9 +292,28 @@ void apply_thread_qos_tag(pid_t pid, const char *comm, enum qos_tag qos_tag, uin
 	}
 
 	LOG_INFO("Applying QoS Tag %s for %d %s", qos_tag_to_char(qos_tag), pid, comm);
+retry:
 	ret = sched_setattr(pid, &sa, 0);
+	if (ret && errno == E2BIG) {
+		switch (sa.size) {
+		case SCHED_ATTR_SIZE_VER1:
+			LOG_VERBOSE("Kernel doesn't support SCHED_ATTR_SIZE_VER2, reverting to VER1");
+			sa.size = SCHED_ATTR_SIZE_VER1;
+			sa.sched_flags &= ~SCHED_FLAG_QOS;
+			goto retry;
+		case SCHED_ATTR_SIZE_VER0:
+			LOG_VERBOSE("Kernel doesn't support SCHED_ATTR_SIZE_VER1, reverting to VER0");
+			sa.size = SCHED_ATTR_SIZE_VER0;
+			sa.sched_flags &= ~SCHED_FLAG_UTIL_CLAMP_MIN;
+			sa.sched_flags &= ~SCHED_FLAG_UTIL_CLAMP_MAX;
+			goto retry;
+		default:
+			LOG_ERROR("Unknown sched_attr version");
+			break;
+		}
+	}
 	if (ret)
-		LOG_ERROR("Failed to change sched_attr for %d", pid);
+		LOG_ERROR("Failed to change sched_attr for %d: %d", pid, errno);
 
 	log_thread_attr(pid);
 }
