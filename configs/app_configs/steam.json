@@ -17,6 +17,23 @@
 	},
 	"*/steamapps/common/*": {
 		"period": 16000000,
-		"qos": "QOS_USER_INTERACTIVE"
+		"qos": "QOS_USER_INTERACTIVE",
+		"thread_qos": {
+			"dxvk*": "QOS_USER_INTERACTIVE_LL",
+			"FAudio*": "QOS_USER_INTERACTIVE_LL",
+			"AudioMixer*": "QOS_USER_INTERACTIVE_LL",
+			"audio_client_ma*": "QOS_USER_INTERACTIVE_LL",
+			"RHIThread": "QOS_USER_INTERACTIVE_LL",
+			"TASync*": "QOS_USER_INTERACTIVE_LL",
+			"RTHeartBeat": "QOS_USER_INTERACTIVE_LL",
+			"FHeartBeat": "QOS_USER_INTERACTIVE_LL",
+			"FreezeBreaker": "QOS_USER_INTERACTIVE_LL",
+			"Libwebsockets*": "QOS_USER_INTERACTIVE_LL",
+			"GameThread": "QOS_USER_INTERACTIVE",
+			"RenderThread": "QOS_USER_INTERACTIVE",
+			"Foreground *": "QOS_USER_INITIATED",
+			"Background *": "QOS_UTILITY",
+			"Session_*": "QOS_UTILITY"
+		}
 	}
 }
