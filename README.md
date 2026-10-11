@@ -1,13 +1,12 @@
 Sched QoS
 =========
 
-Sched QoS is a utility/library supported and maintained by the sched community
-to enable easy configuration of scheduler behavior. It provides a higher level
-QoS tags to describe applications behavior that will be translated to
-whatever sched attributes required to achieve that behavior. The goal is to
-detach application description from scheduler specifics; to maintain
-scalability and portability for that description to Just Work across kernels
-and hardware.
+Sched QoS is a service supported and maintained by the sched community to
+enable easy configuration of scheduler behavior. It provides a higher level QoS
+tags to describe applications behavior that will be translated to whatever
+sched attributes required to achieve that behavior. The goal is to detach
+application description from scheduler specifics; to maintain scalability and
+portability for that description to Just Work across kernels and hardware.
 
 For usage, check this [guide](USAGE.md)
 

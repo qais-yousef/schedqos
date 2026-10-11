@@ -198,7 +198,32 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 }
 
 static char doc[] =
-"Sched QoS";
+"Sched QoS\n"
+"\n"
+"Sched QoS is a service supported and maintained by the sched community\n"
+"to enable easy configuration of scheduler behavior. It provides a higher\n"
+"level QoS tags to describe applications behavior that will be translated\n"
+"to whatever sched attributes required to achieve that behavior. The goal\n"
+"is to detach application description from scheduler specifics; to maintain\n"
+"scalability and portability for that description to Just Work across kernels\n"
+"and hardware.\n"
+"\n"
+"The QoS tags (or classes) are fully customizable and exendible by the user\n"
+"by editing qos_mappings.json file.\n"
+"\n"
+"As it stands it only supports managing fair tasks. RT and DL are planned\n"
+"in the future.\n"
+"\n"
+"Available Commands:\n"
+"	start:		Start schedqosd daemon\n"
+"	stop:		Stop schedqosd daemon\n"
+"	restart:	Restart schedqosd daemon\n"
+"	sched_profile:	Apply a sched_profile as described in sched_profiles.json\n"
+"\n"
+"	schedqos [command] --help for per command options\n"
+;
+
+static char args_doc[] = "[command]";
 
 static const struct argp_option options[] = {
 	{ "verbose", 'v', 0, 0, "Enable verbose logging." },
@@ -209,5 +234,6 @@ static const struct argp_option options[] = {
 const struct argp argp = {
 	.options = options,
 	.parser = parse_arg,
+	.args_doc = args_doc,
 	.doc = doc,
 };
