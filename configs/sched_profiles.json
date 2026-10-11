@@ -6,6 +6,13 @@
 		},
 		"cpufreq": {
 			"scaling_governor": "schedutil"
+		},
+		"sysfs": {
+			"/sys/devices/system/cpu/intel_pstate/status": "active",
+			"/sys/devices/system/cpu/amd_pstate/status": "active"
+		},
+		"sysctl": {
+			"/proc/sys/kernel/sched_autogroup_enabled": "1"
 		}
 	},
 	"interactive": {
@@ -15,6 +22,13 @@
 		},
 		"cpufreq": {
 			"scaling_governor": "schedutil"
+		},
+		"sysfs": {
+			"/sys/devices/system/cpu/intel_pstate/status": "active",
+			"/sys/devices/system/cpu/amd_pstate/status": "active"
+		},
+		"sysctl": {
+			"/proc/sys/kernel/sched_autogroup_enabled": "1"
 		}
 	},
 	"qos": {
@@ -24,6 +38,13 @@
 		},
 		"cpufreq": {
 			"scaling_governor": "schedutil"
+		},
+		"sysfs": {
+			"/sys/devices/system/cpu/intel_pstate/status": "passive",
+			"/sys/devices/system/cpu/amd_pstate/status": "passive"
+		},
+		"sysctl": {
+			"/proc/sys/kernel/sched_autogroup_enabled": "0"
 		}
 	}
 }

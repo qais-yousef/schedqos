@@ -157,6 +157,8 @@ static void __parse_sched_profiles(const char *json_string)
 
 		cJSON *debugfs = cJSON_GetObjectItemCaseSensitive(profile, "debugfs");
 		cJSON *cpufreq = cJSON_GetObjectItemCaseSensitive(profile, "cpufreq");
+		cJSON *sysfs = cJSON_GetObjectItemCaseSensitive(profile, "sysfs");
+		cJSON *sysctl = cJSON_GetObjectItemCaseSensitive(profile, "sysctl");
 
 		if (!debugfs || !cpufreq) {
 			LOG_ERROR("Incomplete sched profile spec");
@@ -198,6 +200,46 @@ static void __parse_sched_profiles(const char *json_string)
 			} else if (cJSON_IsString(node)) {
 				LOG_INFO("	- %s: %s", node->string, node->valuestring);
 				sched_profiles_add_cpufreq(sched_profile, node->string, node->valuestring);
+			} else {
+				LOG_ERROR("%s value must be a string", node->string);
+			}
+		}
+
+		LOG_INFO("  sysfs");
+		cJSON_ArrayForEach(node, sysfs) {
+			if (cJSON_IsArray(node)) {
+				cJSON *val = NULL;
+				cJSON_ArrayForEach(val, node) {
+					if (cJSON_IsString(val)) {
+						LOG_INFO("	- %s: %s", node->string, val->valuestring);
+						sched_profiles_add_sysfs(sched_profile, node->string, val->valuestring);
+					} else {
+						LOG_ERROR("%s value must be a string", node->string);
+					}
+				}
+			} else if (cJSON_IsString(node)) {
+				LOG_INFO("	- %s: %s", node->string, node->valuestring);
+				sched_profiles_add_sysfs(sched_profile, node->string, node->valuestring);
+			} else {
+				LOG_ERROR("%s value must be a string", node->string);
+			}
+		}
+
+		LOG_INFO("  sysctl");
+		cJSON_ArrayForEach(node, sysctl) {
+			if (cJSON_IsArray(node)) {
+				cJSON *val = NULL;
+				cJSON_ArrayForEach(val, node) {
+					if (cJSON_IsString(val)) {
+						LOG_INFO("	- %s: %s", node->string, val->valuestring);
+						sched_profiles_add_sysctl(sched_profile, node->string, val->valuestring);
+					} else {
+						LOG_ERROR("%s value must be a string", node->string);
+					}
+				}
+			} else if (cJSON_IsString(node)) {
+				LOG_INFO("	- %s: %s", node->string, node->valuestring);
+				sched_profiles_add_sysctl(sched_profile, node->string, node->valuestring);
 			} else {
 				LOG_ERROR("%s value must be a string", node->string);
 			}

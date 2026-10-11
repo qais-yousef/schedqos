@@ -18,6 +18,8 @@ struct sched_profile {
 	char *profile;
 	GTree *debugfs_settings;
 	GTree *cpufreq_settings;
+	GTree *sysfs_settings;
+	GTree *sysctl_settings;
 };
 
 static GHashTable *sched_profiles_registry;
@@ -134,6 +136,25 @@ static bool write_cpufreq_all_policies(const char *node, const char *value)
 	return true;
 }
 
+static void write_file(const char *file, const char *value)
+{
+	FILE *fp;
+
+	fp = fopen(file, "w");
+	if (!fp) {
+		LOG_ERROR("Error opening %s: %m", file);
+		return;
+	}
+
+	if (fprintf(fp, "%s", value) < 0) {
+		LOG_ERROR("Failed to write to %s: %d", file, errno);
+		fclose(fp);
+		return;
+	}
+
+	fclose(fp);
+}
+
 static gint compare_keys(gconstpointer a, gconstpointer b, gpointer user_data)
 {
 	return g_strcmp0((const char *)a, (const char *)b);
@@ -143,12 +164,16 @@ static void create_settings_registries(struct sched_profile *profile)
 {
 	profile->debugfs_settings = g_tree_new_full(compare_keys, NULL, g_free, g_free);
 	profile->cpufreq_settings = g_tree_new_full(compare_keys, NULL, g_free, g_free);
+	profile->sysfs_settings = g_tree_new_full(compare_keys, NULL, g_free, g_free);
+	profile->sysctl_settings = g_tree_new_full(compare_keys, NULL, g_free, g_free);
 }
 
 static void destroy_settings_registries(struct sched_profile *profile)
 {
 	g_tree_unref(profile->debugfs_settings);
 	g_tree_unref(profile->cpufreq_settings);
+	g_tree_unref(profile->sysfs_settings);
+	g_tree_unref(profile->sysctl_settings);
 }
 
 static void free_sched_profile(gpointer data)
@@ -234,6 +259,36 @@ void sched_profiles_add_cpufreq(void *profile, const char *node, const char *val
 	g_tree_insert(pprofile->cpufreq_settings, g_strdup(value), g_strdup(node));
 }
 
+void sched_profiles_add_sysfs(void *profile, const char *node, const char *value)
+{
+	struct sched_profile *pprofile = (struct sched_profile *)profile;
+
+	if (!profile) {
+		LOG_ERROR("Invalid profile");
+		return;
+	}
+
+	LOG_VERBOSE("Adding new sysfs setting %s: %s", node, value);
+
+	/* use node as key as it is likely unique */
+	g_tree_insert(pprofile->sysfs_settings, g_strdup(node), g_strdup(value));
+}
+
+void sched_profiles_add_sysctl(void *profile, const char *node, const char *value)
+{
+	struct sched_profile *pprofile = (struct sched_profile *)profile;
+
+	if (!profile) {
+		LOG_ERROR("Invalid profile");
+		return;
+	}
+
+	LOG_VERBOSE("Adding new sysctl setting %s: %s", node, value);
+
+	/* use node as key as it is likely unique */
+	g_tree_insert(pprofile->sysctl_settings, g_strdup(node), g_strdup(value));
+}
+
 static gboolean debugfs_iter(gpointer value, gpointer node, gpointer data)
 {
 	char *debugfs_path = (char *)data;
@@ -247,6 +302,38 @@ static gboolean cpufreq_iter(gpointer value, gpointer node, gpointer data)
 {
 	LOG_INFO("  Writing cpufreq setting %s: %s", (char *)node, (char *)value);
 	write_cpufreq_all_policies((char *)node, (char *)value);
+	return FALSE;
+}
+
+static gboolean verify_sysfs(char *file)
+{
+	return strncmp(file, "/sys/", sizeof("/sys/") - 1) == 0;
+}
+
+static gboolean sysfs_iter(gpointer node, gpointer value, gpointer data)
+{
+	if (!verify_sysfs((char *)node)) {
+		LOG_ERROR("Invalid sysfs file: %s", (char *)node);
+		return FALSE;
+	}
+	LOG_INFO("  Writing sysfs setting %s: %s", (char *)node, (char *)value);
+	write_file((char *)node, (char *)value);
+	return FALSE;
+}
+
+static gboolean verify_sysctl(char *file)
+{
+	return strncmp(file, "/proc/sys/kernel/", sizeof("/proc/sys/kernel/") - 1) == 0;
+}
+
+static gboolean sysctl_iter(gpointer node, gpointer value, gpointer data)
+{
+	if (!verify_sysctl((char *)node)) {
+		LOG_ERROR("Invalid sysctl file: %s", (char *)node);
+		return FALSE;
+	}
+	LOG_INFO("  Writing sysctl setting %s: %s", (char *)node, (char *)value);
+	write_file((char *)node, (char *)value);
 	return FALSE;
 }
 
@@ -283,4 +370,6 @@ void sched_profiles_apply_profile(const char *profile)
 	}
 
 	g_tree_foreach(pprofile->cpufreq_settings, cpufreq_iter, NULL);
+	g_tree_foreach(pprofile->sysfs_settings, sysfs_iter, NULL);
+	g_tree_foreach(pprofile->sysctl_settings, sysctl_iter, NULL);
 }
