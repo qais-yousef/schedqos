@@ -82,7 +82,7 @@ static void __parse_app_config(const char *json_string)
 	cJSON_Delete(root);
 }
 
-static void __parse_sched_qos(enum qos_tag qos_tag, const cJSON *sched_qos)
+static void __parse_sched_qos(char *qos_tag, const cJSON *sched_qos)
 {
 	cJSON *attr = NULL;
 	cJSON_ArrayForEach(attr, sched_qos) {
@@ -116,14 +116,14 @@ static void __parse_qos_mappings(const char *json_string)
 		cJSON_ArrayForEach(attr, qos_node) {
 			if (cJSON_IsNumber(attr)) {
 				LOG_INFO("  %s: %d", attr->string, attr->valueint);
-				parse_thread_qos_mapping_int(char_to_qos_tag(qos_node->string),
+				parse_thread_qos_mapping_int(qos_node->string,
 							     attr->string, attr->valueint);
 			} else if (cJSON_IsString(attr)) {
 				LOG_INFO("  %s: %s", attr->string, attr->valuestring);
-				parse_thread_qos_mapping_str(char_to_qos_tag(qos_node->string),
+				parse_thread_qos_mapping_str(qos_node->string,
 							     attr->string, attr->valuestring);
 			} else if (strcmp(attr->string, "sched_qos") == 0){
-				__parse_sched_qos(char_to_qos_tag(qos_node->string), attr);
+				__parse_sched_qos(qos_node->string, attr);
 			} else {
 				LOG_ERROR(" Unknown sched_attr type: %s", attr->string);
 			}

@@ -11,6 +11,7 @@
 #include "configs_parser.h"
 #include "netlink_monitor.h"
 #include "qos_manager.h"
+#include "qos_tagging.h"
 #include "sched_profiles.h"
 
 #define DAEMON_NAME		"schedqosd"
@@ -115,6 +116,7 @@ static int start_schedqosd(void)
 	}
 
 	init_qos_manager();
+	init_qos_tagging();
 	parse_app_configs();
 	parse_qos_mappings();
 	/* schedqosd assumes qos sched_profile, apply automatically */

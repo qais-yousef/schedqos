@@ -23,7 +23,7 @@ struct app_instance {
  */
 struct thread_qos {
 	char *comm;
-	enum qos_tag qos_tag;
+	char *qos_tag;
 };
 
 /*
@@ -31,7 +31,7 @@ struct thread_qos {
  */
 struct app_config {
 	char *cmdline;
-	enum qos_tag qos_tag;		/* Default QOS tag for all tasks if not explicitly specified */
+	char *qos_tag;		/* Default QOS tag for all tasks if not explicitly specified */
 	uint64_t period;		/* period in ns */
 	GHashTable *threads_registry;
 };
@@ -44,6 +44,7 @@ static void free_thread_qos(gpointer data)
 {
 	struct thread_qos *thread = (struct thread_qos *)data;
 	g_free(thread->comm);
+	g_free(thread->qos_tag);
 	g_free(thread);
 }
 
@@ -80,6 +81,7 @@ static void free_app_config(gpointer data)
 	struct app_config *app = (struct app_config *)data;
 	destroy_threads_registry(app);
 	g_free(app->cmdline);
+	g_free(app->qos_tag);
 	g_free(app);
 }
 
@@ -181,7 +183,7 @@ bool add_app_qos_tag(const void *app, char *qos_tag)
 {
 	struct app_config *_app = (struct app_config *)app;
 
-	_app->qos_tag = char_to_qos_tag(qos_tag);
+	_app->qos_tag = g_strdup(qos_tag);
 
 	LOG_INFO("Set App QoS Tag to %s", qos_tag);
 
@@ -197,7 +199,7 @@ bool add_thread_qos_tag(const void *app, const char *comm, char *qos_tag)
 		return false;;
 
 	thread->comm = g_strdup(comm);
-	thread->qos_tag = char_to_qos_tag(qos_tag);
+	thread->qos_tag = g_strdup(qos_tag);
 
 	LOG_INFO("Add QoS Tag for %s: %s", comm, qos_tag);
 
@@ -222,7 +224,7 @@ void *create_app_config(const char *cmdline)
 	LOG_INFO("Creating new app config for %s", cmdline);
 
 	app->cmdline = g_strdup(cmdline);
-	app->qos_tag = QOS_DEFAULT;
+	app->qos_tag = g_strdup("QOS_DEFAULT");
 
 	/* We can add (unique) aliases easily by inserting more names to point to app*/
 	g_hash_table_insert(app_config_registry, g_strdup(cmdline), app);
@@ -276,7 +278,7 @@ void destroy_app_instance(const pid_t tgid)
 
 bool apply_thread_qos(pid_t pid, pid_t tgid, const char *comm)
 {
-	enum qos_tag qos_tag = QOS_DEFAULT;
+	char *qos_tag = "QOS_DEFAULT";
 	struct app_instance *appi;
 	struct thread_qos *thread;
 	struct app_config *app;
@@ -314,7 +316,7 @@ bool apply_thread_qos(pid_t pid, pid_t tgid, const char *comm)
 	ret = true;
 
 out:
-	LOG_INFO("Applying QoS Tag %s for %d:%d %s", qos_tag_to_char(qos_tag), pid, tgid, comm);
+	LOG_INFO("Applying QoS Tag %s for %d:%d %s", qos_tag, pid, tgid, comm);
 
 	apply_thread_qos_tag(pid, comm, qos_tag, period);
 

@@ -4,6 +4,14 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+/*
+ * Hack to avoid conflict witih glib.h pulling bits/sched.h causing
+ * redefinition errors emitted by the compiler.
+ */
+#ifndef _BITS_SCHED_H
+#define _BITS_SCHED_H 1
+#endif
+
 #define SCHED_ATTR_SIZE_VER0    48
 #define SCHED_ATTR_SIZE_VER1    56
 #define SCHED_ATTR_SIZE_VER2    72
