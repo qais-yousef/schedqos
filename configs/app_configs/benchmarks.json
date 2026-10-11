@@ -1,7 +1,7 @@
 {
 	"schbench": {
 		"thread_qos": {
-			"schbench-msg": "QOS_USER_INTERACTIVE",
+			"schbench-msg": "QOS_USER_INTERACTIVE_LL",
 			"schbench-worker": "QOS_USER_INTERACTIVE"
 		}
 	},

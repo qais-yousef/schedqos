@@ -1,4 +1,13 @@
 {
+	"QOS_USER_INTERACTIVE_LL": {
+		"sched_policy": "SCHED_NORMAL",
+		"sched_nice": -6,
+		"sched_runtime": 4000000,
+		"sched_util_max": 1024,
+		"sched_qos": {
+			"SCHED_QOS_RAMPUP_MULTIPLIER": 8
+		}
+	},
 	"QOS_USER_INTERACTIVE": {
 		"sched_policy": "SCHED_NORMAL",
 		"sched_nice": -4,
